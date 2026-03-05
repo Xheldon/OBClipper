@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:coddingtonbear.github.io)"
+      "WebFetch(domain:coddingtonbear.github.io)",
+      "WebFetch(domain:realmacsoftware.com)"
     ]
   }
 }

@@ -41,12 +41,12 @@
 }
 
 .status.success {
-  background: rgba(85, 192, 119, 0.15);
+  background: rgba(90, 171, 110, 0.12);
   color: var(--success);
 }
 
 .status.error {
-  background: rgba(224, 85, 85, 0.15);
+  background: rgba(212, 80, 80, 0.12);
   color: var(--danger);
 }
 

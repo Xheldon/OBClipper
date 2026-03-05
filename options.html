@@ -16,6 +16,12 @@
     <!-- Global API Config -->
     <section class="card" id="api-section">
       <h2>Obsidian API 配置</h2>
+      <div style="margin-bottom: 14px">
+        <a class="api-plugin-link" href="https://github.com/coddingtonbear/obsidian-local-rest-api" target="_blank">
+          <span class="link-icon">🔗</span>Local REST API 插件
+        </a>
+        <span class="api-plugin-hint">（也可在 Obsidian 插件市场搜索 "Local REST API" 安装）</span>
+      </div>
       <div class="field">
         <label>API 地址</label>
         <input type="text" id="apiUrl" placeholder="https://127.0.0.1:27124">
@@ -52,13 +58,20 @@
 
   <!-- Profile editor template (hidden) -->
   <template id="profileEditorTpl">
-    <div class="profile-editor" data-id="">
+    <div class="profile-editor collapsed" data-id="">
+      <div class="profile-collapse-header">
+        <span class="profile-collapse-title">
+          <span class="profile-collapse-arrow">▼</span>
+          <span class="profile-collapse-name">未命名 Profile</span>
+        </span>
+        <button class="btn-danger delete-profile-btn" title="删除">删除</button>
+      </div>
+      <div class="profile-collapse-body">
       <div class="profile-head">
         <div class="field" style="flex:1;margin-bottom:0">
           <label>Profile 名称</label>
           <input type="text" class="profile-name" placeholder="例如：博客文章">
         </div>
-        <button class="btn-danger delete-profile-btn" title="删除">删除</button>
       </div>
 
       <!-- Auto-match URLs -->
@@ -78,7 +91,18 @@
 
       <!-- Selectors -->
       <div class="field">
-        <label>变量 & 选择器</label>
+        <div class="selector-label-wrap">
+          <label style="margin-bottom:0">变量 & 选择器</label>
+          <span class="help-icon">?
+            <span class="help-tooltip">
+              <b>变量名</b>：在模板中通过 {{变量名}} 引用<br>
+              <b>CSS 选择器</b>：用于定位页面元素，如 h1.title<br>
+              <b>属性</b>：填写元素属性名（如 src、href），留空则取文本内容<br>
+              <b>附件</b>：勾选后值将作为 URL 下载并保存到附件目录<br>
+              <b>JS 表达式</b>：对提取值进行二次处理，变量 value 为提取的文本
+            </span>
+          </span>
+        </div>
         <div class="selector-list"></div>
         <button class="btn-ghost add-selector-btn">+ 添加变量</button>
         <label class="toggle transform-toggle-wrap" style="margin-top:6px">
@@ -108,6 +132,7 @@
 
       <button class="btn-primary save-profile-btn">保存 Profile</button>
       <span class="save-hint profile-save-hint"></span>
+      </div><!-- /profile-collapse-body -->
     </div>
   </template>
 
@@ -116,8 +141,8 @@
     <div class="selector-row">
       <div class="selector-row-main">
         <input type="text" class="var-name" placeholder="变量名">
-        <input type="text" class="var-selector" placeholder="CSS 选择器，如 h1.title">
-        <input type="text" class="var-attr" list="attrSuggestions" placeholder="属性（留空取文本）" title="填写元素属性名，如 src、href，留空则取 textContent">
+        <input type="text" class="var-selector" placeholder="CSS 选择器">
+        <input type="text" class="var-attr" list="attrSuggestions" placeholder="属性">
         <label class="attachment-check" title="标记为附件（值为 URL，将下载保存）">
           <input type="checkbox" class="var-attachment">
           <span>附件</span>
@@ -125,7 +150,7 @@
         <button class="btn-ghost remove-selector-btn" title="删除">×</button>
       </div>
       <div class="selector-row-transform" style="display:none">
-        <input type="text" class="var-transform" placeholder="JS 表达式，变量 value 为提取的文本，如：value.split('|')[0].trim()">
+        <input type="text" class="var-transform" placeholder="如：value.split('|')[0].trim()">
       </div>
     </div>
   </template>

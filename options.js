@@ -51,6 +51,24 @@ function createProfileEditor(profile) {
   el.dataset.id = profile.id;
 
   el.querySelector(".profile-name").value = profile.name || "";
+
+  // Collapsible header
+  const collapseHeader = el.querySelector(".profile-collapse-header");
+  const collapseName = el.querySelector(".profile-collapse-name");
+  collapseName.textContent = profile.name || "未命名 Profile";
+  collapseHeader.addEventListener("click", (e) => {
+    // Don't toggle when clicking the delete button
+    if (e.target.closest(".delete-profile-btn")) return;
+    el.classList.toggle("collapsed");
+  });
+  // Sync name to collapse header
+  el.querySelector(".profile-name").addEventListener("input", (e) => {
+    collapseName.textContent = e.target.value.trim() || "未命名 Profile";
+  });
+  // Expand new/unnamed profiles by default
+  if (!profile.name) {
+    el.classList.remove("collapsed");
+  }
   el.querySelector(".template-input").value = profile.template || "";
   el.querySelector(".vault-path").value = profile.vaultPath || "";
   el.querySelector(".attachment-path").value = profile.attachmentPath || "";
