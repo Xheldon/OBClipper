@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="styles.css">
@@ -9,37 +9,38 @@
   <div class="popup">
     <div class="popup-header">
       <span class="logo">Obsidian Clipper</span>
-      <a href="#" id="openOptions" class="settings-link" title="设置">⚙</a>
+      <a href="#" id="openOptions" class="settings-link" data-i18n-title="popup.settings" title="Settings">⚙</a>
     </div>
 
     <div id="status" class="status" style="display:none"></div>
 
     <div id="mainView">
       <div class="field">
-        <label>选择 Profile</label>
+        <label data-i18n="popup.selectProfile">Select Profile</label>
         <select id="profileSelect"></select>
       </div>
       <div id="previewSection" style="display:none">
         <div class="field">
-          <label>预览变量</label>
+          <label data-i18n="popup.previewVars">Preview Variables</label>
           <div id="varPreview" class="var-preview"></div>
         </div>
         <div class="field">
-          <label>保存路径</label>
+          <label data-i18n="popup.savePath">Save Path</label>
           <div id="pathPreview" class="path-preview"></div>
         </div>
       </div>
       <div class="actions">
-        <button class="btn-primary full-width" id="extractBtn" disabled>提取并保存</button>
+        <button class="btn-primary full-width" id="extractBtn" disabled data-i18n="popup.extractBtn">Extract & Save</button>
       </div>
     </div>
 
     <div id="emptyView" style="display:none">
-      <p class="empty-text">还没有配置 Profile，请先去设置页面创建。</p>
-      <button class="btn-primary full-width" id="goOptions">打开设置</button>
+      <p class="empty-text" data-i18n="popup.emptyText">No Profiles configured yet. Please create one in Settings.</p>
+      <button class="btn-primary full-width" id="goOptions" data-i18n="popup.openSettings">Open Settings</button>
     </div>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -42,7 +42,24 @@ function createSelectorRow(varName = "", selector = "", transform = "", attr = "
   row.querySelector(".remove-selector-btn").addEventListener("click", () => {
     row.remove();
   });
+  // Apply i18n to the cloned row
+  applyI18nInEl(row);
   return row;
+}
+
+function applyI18nInEl(el) {
+  el.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  el.querySelectorAll("[data-i18n-html]").forEach((node) => {
+    node.innerHTML = t(node.dataset.i18nHtml);
+  });
+  el.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.placeholder = t(node.dataset.i18nPlaceholder);
+  });
+  el.querySelectorAll("[data-i18n-title]").forEach((node) => {
+    node.title = t(node.dataset.i18nTitle);
+  });
 }
 
 function createProfileEditor(profile) {
@@ -55,17 +72,14 @@ function createProfileEditor(profile) {
   // Collapsible header
   const collapseHeader = el.querySelector(".profile-collapse-header");
   const collapseName = el.querySelector(".profile-collapse-name");
-  collapseName.textContent = profile.name || "未命名 Profile";
+  collapseName.textContent = profile.name || t("profile.unnamed");
   collapseHeader.addEventListener("click", (e) => {
-    // Don't toggle when clicking the delete button
     if (e.target.closest(".delete-profile-btn")) return;
     el.classList.toggle("collapsed");
   });
-  // Sync name to collapse header
   el.querySelector(".profile-name").addEventListener("input", (e) => {
-    collapseName.textContent = e.target.value.trim() || "未命名 Profile";
+    collapseName.textContent = e.target.value.trim() || t("profile.unnamed");
   });
-  // Expand new/unnamed profiles by default
   if (!profile.name) {
     el.classList.remove("collapsed");
   }
@@ -107,7 +121,7 @@ function createProfileEditor(profile) {
 
   // Delete
   el.querySelector(".delete-profile-btn").addEventListener("click", async () => {
-    if (!confirm(`确定删除 Profile「${profile.name || "未命名"}」吗？`)) return;
+    if (!confirm(t("profile.deleteConfirm", { name: profile.name || t("profile.unnamed") }))) return;
     el.remove();
     const cfg = await loadConfig();
     cfg.profiles = cfg.profiles.filter((p) => p.id !== profile.id);
@@ -125,8 +139,11 @@ function createProfileEditor(profile) {
       cfg.profiles.push(updated);
     }
     await saveProfiles(cfg.profiles);
-    showHint(el.querySelector(".profile-save-hint"), "已保存");
+    showHint(el.querySelector(".profile-save-hint"), t("hint.saved"));
   });
+
+  // Apply i18n to cloned template
+  applyI18nInEl(el);
 
   return el;
 }
@@ -174,9 +191,29 @@ function showHint(el, msg) {
   }, 2000);
 }
 
+// ---- Language switcher ----
+
+function updateLangButtons() {
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.lang === currentLang);
+  });
+}
+
 // ---- Init ----
 
 async function init() {
+  await loadLang();
+  applyI18n();
+  updateLangButtons();
+
+  // Language switcher
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      await saveLang(btn.dataset.lang);
+      location.reload();
+    });
+  });
+
   const cfg = await loadConfig();
 
   document.getElementById("apiUrl").value = cfg.apiUrl;
@@ -186,7 +223,7 @@ async function init() {
     const url = document.getElementById("apiUrl").value.trim();
     const key = document.getElementById("apiKey").value.trim();
     await saveApiConfig(url, key);
-    showHint(document.getElementById("apiSaveHint"), "已保存");
+    showHint(document.getElementById("apiSaveHint"), t("hint.saved"));
   });
 
   cfg.profiles.forEach((p) => {
@@ -218,7 +255,7 @@ async function init() {
     a.download = "obsidian-clipper-config.json";
     a.click();
     URL.revokeObjectURL(url);
-    showHint(document.getElementById("ioHint"), "已导出");
+    showHint(document.getElementById("ioHint"), t("hint.exported"));
   });
 
   // Import
@@ -233,17 +270,17 @@ async function init() {
       const text = await file.text();
       const data = JSON.parse(text);
       if (!data.profiles || !Array.isArray(data.profiles)) {
-        throw new Error("无效的配置文件");
+        throw new Error(t("hint.invalidConfig"));
       }
       await chrome.storage.local.set({
         apiUrl: data.apiUrl || "https://127.0.0.1:27124",
         apiKey: data.apiKey || "",
         profiles: data.profiles,
       });
-      showHint(document.getElementById("ioHint"), "已导入，页面将刷新");
+      showHint(document.getElementById("ioHint"), t("hint.imported"));
       setTimeout(() => location.reload(), 800);
     } catch (err) {
-      showHint(document.getElementById("ioHint"), "导入失败: " + err.message);
+      showHint(document.getElementById("ioHint"), t("hint.importFail") + err.message);
     }
     $importFile.value = "";
   });
