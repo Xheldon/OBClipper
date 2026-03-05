@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Obsidian Clipper 设置</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Obsidian Clipper 设置</h1>
+      <p class="subtitle">配置 Obsidian API 连接 & Profile</p>
+    </header>
+
+    <!-- Global API Config -->
+    <section class="card" id="api-section">
+      <h2>Obsidian API 配置</h2>
+      <div class="field">
+        <label>API 地址</label>
+        <input type="text" id="apiUrl" placeholder="https://127.0.0.1:27124">
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="在 Obsidian 插件设置中获取">
+      </div>
+      <button class="btn-primary" id="saveApiBtn">保存 API 配置</button>
+      <span class="save-hint" id="apiSaveHint"></span>
+    </section>
+
+    <!-- Profiles -->
+    <section class="card" id="profiles-section">
+      <div class="section-header">
+        <h2>Profiles</h2>
+        <button class="btn-primary" id="addProfileBtn">+ 新建 Profile</button>
+      </div>
+
+      <div id="profileList"></div>
+    </section>
+
+    <!-- Import / Export -->
+    <section class="card" id="io-section">
+      <h2>导入 / 导出配置</h2>
+      <div class="io-actions">
+        <button class="btn-primary" id="exportBtn">导出全部配置</button>
+        <button class="btn-ghost" id="importBtn">导入配置</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+      </div>
+      <span class="save-hint" id="ioHint"></span>
+    </section>
+  </div>
+
+  <!-- Profile editor template (hidden) -->
+  <template id="profileEditorTpl">
+    <div class="profile-editor" data-id="">
+      <div class="profile-head">
+        <div class="field" style="flex:1;margin-bottom:0">
+          <label>Profile 名称</label>
+          <input type="text" class="profile-name" placeholder="例如：博客文章">
+        </div>
+        <button class="btn-danger delete-profile-btn" title="删除">删除</button>
+      </div>
+
+      <!-- Auto-match URLs -->
+      <div class="field">
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" class="auto-match-toggle">
+            <span class="toggle-slider"></span>
+          </label>
+          <span>自动匹配网址</span>
+        </div>
+      </div>
+      <div class="field url-patterns-field" style="display:none">
+        <label>匹配网址（每行一个，支持 * 通配符）</label>
+        <textarea class="url-patterns" rows="3" placeholder="https://example.com/posts/*&#10;https://blog.example.com/*"></textarea>
+      </div>
+
+      <!-- Selectors -->
+      <div class="field">
+        <label>变量 & 选择器</label>
+        <div class="selector-list"></div>
+        <button class="btn-ghost add-selector-btn">+ 添加变量</button>
+        <label class="toggle transform-toggle-wrap" style="margin-top:6px">
+          <input type="checkbox" class="show-transform-toggle">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label-text">显示 JS 处理代码</span>
+      </div>
+
+      <!-- Template -->
+      <div class="field">
+        <label>文件模板（使用 {{变量名}} 引用）</label>
+        <textarea class="template-input" rows="8" placeholder="---&#10;title: {{title}}&#10;---&#10;&#10;{{content}}"></textarea>
+      </div>
+
+      <!-- Vault path -->
+      <div class="field">
+        <label>保存路径（相对 Vault 根目录，如：Articles/{{title}}.md）</label>
+        <input type="text" class="vault-path" placeholder="Clippings/{{title}}.md">
+      </div>
+
+      <!-- Attachment path -->
+      <div class="field">
+        <label>附件存储路径（相对 Vault 根目录，如：Attachments/）</label>
+        <input type="text" class="attachment-path" placeholder="Attachments/">
+      </div>
+
+      <button class="btn-primary save-profile-btn">保存 Profile</button>
+      <span class="save-hint profile-save-hint"></span>
+    </div>
+  </template>
+
+  <!-- Selector row template -->
+  <template id="selectorRowTpl">
+    <div class="selector-row">
+      <div class="selector-row-main">
+        <input type="text" class="var-name" placeholder="变量名">
+        <input type="text" class="var-selector" placeholder="CSS 选择器，如 h1.title">
+        <input type="text" class="var-attr" list="attrSuggestions" placeholder="属性（留空取文本）" title="填写元素属性名，如 src、href，留空则取 textContent">
+        <label class="attachment-check" title="标记为附件（值为 URL，将下载保存）">
+          <input type="checkbox" class="var-attachment">
+          <span>附件</span>
+        </label>
+        <button class="btn-ghost remove-selector-btn" title="删除">×</button>
+      </div>
+      <div class="selector-row-transform" style="display:none">
+        <input type="text" class="var-transform" placeholder="JS 表达式，变量 value 为提取的文本，如：value.split('|')[0].trim()">
+      </div>
+    </div>
+  </template>
+
+  <datalist id="attrSuggestions">
+    <option value="src">
+    <option value="href">
+    <option value="poster">
+    <option value="data-src">
+    <option value="data-url">
+    <option value="alt">
+    <option value="title">
+    <option value="content">
+  </datalist>
+
+  <script src="options.js"></script>
+</body>
+</html>
