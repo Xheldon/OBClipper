@@ -315,6 +315,63 @@ header h1 {
   width: 100%;
 }
 
+/* AI Chat Profile */
+.ai-url-list {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+}
+
+.ai-url-item {
+  padding: 2px 0;
+}
+
+.ai-url-item code {
+  background: rgba(138, 92, 245, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: "SF Mono", "Menlo", "Monaco", monospace;
+  font-size: 11px;
+  color: var(--primary);
+}
+
+.ai-site-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.ai-site-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.ai-site-block .field {
+  margin-bottom: 8px;
+}
+
+.ai-site-block .field:last-child {
+  margin-bottom: 0;
+}
+
+.ai-site-block label {
+  font-size: 11px;
+  min-width: 70px;
+}
+
+.ai-site-block input {
+  width: 100%;
+  font-family: "SF Mono", "Menlo", "Monaco", monospace;
+  font-size: 12px;
+}
+
 /* Import / Export */
 .io-actions {
   display: flex;

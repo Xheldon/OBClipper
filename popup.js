@@ -1,17 +1,19 @@
 // ---- Helpers ----
 
 async function loadConfig() {
-  const { apiUrl, apiKey, profiles, defaultProfileId } = await chrome.storage.local.get([
+  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile } = await chrome.storage.local.get([
     "apiUrl",
     "apiKey",
     "profiles",
     "defaultProfileId",
+    "aiProfile",
   ]);
   return {
     apiUrl: apiUrl || "https://127.0.0.1:27124",
     apiKey: apiKey || "",
     profiles: profiles || [],
     defaultProfileId: defaultProfileId || null,
+    aiProfile: aiProfile || { enabled: true, vaultPath: "", selectors: [], sites: {} },
   };
 }
 
@@ -92,6 +94,80 @@ async function extractContent(tabId) {
     return results[0]?.result || "";
   } catch (e) {
     console.warn("[OBClipper] Content extraction failed:", e.message);
+    return "";
+  }
+}
+
+// ---- Extract AI chat content ----
+
+async function extractAIChatContent(tabId, siteConfig) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["lib/defuddle.js"],
+    });
+  } catch (e) {
+    console.warn("[OBClipper] Failed to inject defuddle for AI chat:", e.message);
+    return "";
+  }
+
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: (userSel, assistantSel, stripSel) => {
+        if (!userSel || !assistantSel) return "";
+
+        function htmlToMarkdown(html) {
+          if (typeof Defuddle === "undefined") return html;
+          try {
+            const doc = new DOMParser().parseFromString(
+              `<!DOCTYPE html><html><body>${html}</body></html>`, "text/html"
+            );
+            const result = new Defuddle(doc, { markdown: true }).parse();
+            return (result.content || html).trim();
+          } catch (e) {
+            return html;
+          }
+        }
+
+        function toCallout(type, md) {
+          const lines = md.split("\n");
+          const header = type === "user" ? "> [!faq] User" : "> [!info] AI";
+          return header + "\n" + lines.map((l) => "> " + l).join("\n");
+        }
+
+        const combined = `${userSel}, ${assistantSel}`;
+        const allEls = document.querySelectorAll(combined);
+        if (!allEls.length) return "";
+
+        const blocks = [];
+        for (const el of allEls) {
+          const isUser = el.matches(userSel);
+          const isAssistant = el.matches(assistantSel);
+          if (!isUser && !isAssistant) continue;
+
+          let html;
+          if (isUser && stripSel) {
+            const clone = el.cloneNode(true);
+            clone.querySelectorAll(stripSel).forEach((n) => n.remove());
+            html = clone.innerHTML;
+          } else {
+            html = el.innerHTML;
+          }
+
+          if (!html.trim()) continue;
+          const md = htmlToMarkdown(html);
+          if (!md.trim()) continue;
+          blocks.push(toCallout(isUser ? "user" : "assistant", md));
+        }
+
+        return blocks.join("\n\n");
+      },
+      args: [siteConfig.userSelector, siteConfig.assistantSelector, siteConfig.userStripSelector || ""],
+    });
+    return results[0]?.result || "";
+  } catch (e) {
+    console.warn("[OBClipper] AI chat extraction failed:", e.message);
     return "";
   }
 }
@@ -393,7 +469,10 @@ async function init() {
     chrome.runtime.openOptionsPage();
   });
 
-  if (profiles.length === 0) {
+  const aiEnabled = currentConfig.aiProfile.enabled !== false;
+  const hasProfiles = profiles.length > 0 || aiEnabled;
+
+  if (!hasProfiles) {
     $mainView.style.display = "none";
     $emptyView.style.display = "";
     return;
@@ -402,6 +481,7 @@ async function init() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentUrl = tab?.url || "";
 
+  // Check user profiles for auto-match first
   let autoMatchedId = null;
   for (const p of profiles) {
     if (
@@ -414,10 +494,29 @@ async function init() {
     }
   }
 
+  // Then check AI profile
+  if (!autoMatchedId && aiEnabled) {
+    const aiSite = getMatchedAIChatSite(currentUrl, currentConfig.aiProfile.sites);
+    if (aiSite) {
+      autoMatchedId = AI_PROFILE_ID;
+    }
+  }
+
   const selectedId = autoMatchedId
     || (currentConfig.defaultProfileId && profiles.some((p) => p.id === currentConfig.defaultProfileId)
         ? currentConfig.defaultProfileId
         : null);
+
+  // Add AI profile option to dropdown (if enabled)
+  if (aiEnabled) {
+    const opt = document.createElement("option");
+    opt.value = AI_PROFILE_ID;
+    opt.textContent = t("popup.aiChat");
+    if (autoMatchedId === AI_PROFILE_ID) {
+      opt.textContent += " " + t("popup.autoMatched");
+    }
+    $select.appendChild(opt);
+  }
 
   profiles.forEach((p) => {
     const opt = document.createElement("option");
@@ -441,18 +540,45 @@ async function init() {
   onProfileSelected();
 }
 
+function isAIProfile() {
+  return $select.value === AI_PROFILE_ID;
+}
+
 async function onProfileSelected() {
   hideStatus();
   currentVars = null;
   $preview.style.display = "none";
   $extractBtn.disabled = true;
 
-  const profile = currentConfig.profiles.find((p) => p.id === $select.value);
-  if (!profile) return;
+  const isAI = isAIProfile();
+  const profile = isAI ? null : currentConfig.profiles.find((p) => p.id === $select.value);
+  if (!isAI && !profile) return;
 
   try {
-    currentVars = await extractVariables(profile.selectors);
+    const selectors = isAI ? (currentConfig.aiProfile.selectors || []) : profile.selectors;
+    currentVars = await extractVariables(selectors);
 
+    if (isAI) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const siteConfig = getMatchedAIChatSite(tab.url, currentConfig.aiProfile.sites);
+      if (siteConfig) {
+        currentVars.CONTENT = await extractAIChatContent(tab.id, siteConfig);
+        if (siteConfig.titleSelector) {
+          const titleResult = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: (sel) => {
+              try { const el = document.querySelector(sel); return el?.textContent?.trim() || ""; }
+              catch (e) { return ""; }
+            },
+            args: [siteConfig.titleSelector],
+          });
+          const extracted = titleResult[0]?.result;
+          if (extracted) currentVars.TITLE = extracted;
+        }
+      }
+    }
+
+    // Render preview
     $varPreview.innerHTML = "";
     const $contentField = document.getElementById("contentPreviewField");
     const $contentPreview = document.getElementById("contentPreview");
@@ -464,7 +590,8 @@ async function onProfileSelected() {
         $contentField.style.display = "";
         continue;
       }
-      const sel = profile.selectors.find((s) => s.name === key);
+      const sels = isAI ? (currentConfig.aiProfile.selectors || []) : profile.selectors;
+      const sel = sels.find((s) => s.name === key);
       const badge = sel?.attachment ? ` <span class="att-badge">${t("popup.attachBadge")}</span>` : "";
       const displayVal = val || `<span class="var-empty">${t("popup.empty")}</span>`;
       const row = document.createElement("div");
@@ -473,8 +600,13 @@ async function onProfileSelected() {
       $varPreview.appendChild(row);
     }
 
-    const path = renderPathTemplate(profile.vaultPath || "", currentVars);
-    $pathPreview.textContent = path || `(${t("popup.noPath")})`;
+    const DEFAULT_PATH = "Clipper/{{TITLE}}.md";
+    const DEFAULT_AI_PATH = "AI Chat/{{TITLE}}.md";
+    const vaultPath = isAI
+      ? (currentConfig.aiProfile.vaultPath || DEFAULT_AI_PATH)
+      : (profile.vaultPath || DEFAULT_PATH);
+    const path = renderPathTemplate(vaultPath, currentVars);
+    $pathPreview.textContent = path;
 
     $preview.style.display = "";
     $extractBtn.disabled = false;
@@ -484,8 +616,10 @@ async function onProfileSelected() {
 }
 
 async function doExtractAndSave() {
-  const profile = currentConfig.profiles.find((p) => p.id === $select.value);
-  if (!profile || !currentVars) return;
+  const isAI = isAIProfile();
+  const profile = isAI ? null : currentConfig.profiles.find((p) => p.id === $select.value);
+  if (!isAI && !profile) return;
+  if (!currentVars) return;
 
   $extractBtn.disabled = true;
   $extractBtn.textContent = t("popup.saving");
@@ -493,48 +627,43 @@ async function doExtractAndSave() {
 
   try {
     const varsForTemplate = { ...currentVars };
-    const attachmentSelectors = profile.selectors.filter((s) => s.attachment);
 
-    for (const sel of attachmentSelectors) {
-      const url = varsForTemplate[sel.name];
-      if (!url) continue;
-
-      if (!profile.attachmentPath) {
-        throw new Error(t("popup.attachmentError", { name: sel.name }));
+    if (isAI) {
+      const ai = currentConfig.aiProfile;
+      let yaml = "---\n";
+      for (const sel of (ai.selectors || [])) {
+        if (sel.name && varsForTemplate[sel.name] !== undefined) {
+          yaml += `${sel.name}: "${(varsForTemplate[sel.name] || "").replace(/"/g, '\\"')}"\n`;
+        }
       }
+      yaml += "---\n\n";
+      const fileContent = yaml + (varsForTemplate.CONTENT || "");
+      const filePath = renderPathTemplate(ai.vaultPath || "AI Chat/{{TITLE}}.md", varsForTemplate);
 
-      try {
-        const attachName = varsForTemplate["title"] || profile.name || "attachment";
-        const savedPath = await downloadAndSaveAttachment(
-          currentConfig.apiUrl,
-          currentConfig.apiKey,
-          renderPathTemplate(profile.attachmentPath, varsForTemplate),
-          url,
-          attachName
-        );
-        varsForTemplate[sel.name] = savedPath;
-      } catch (e) {
-        console.warn(`[Obsidian-Clipper] ${t("popup.attachDownloadFail", { name: sel.name })}`, e.message);
-        // Keep original URL so template still has a usable value
+      await saveToObsidian(currentConfig.apiUrl, currentConfig.apiKey, filePath, fileContent);
+    } else {
+      const attachmentSelectors = profile.selectors.filter((s) => s.attachment);
+      for (const sel of attachmentSelectors) {
+        const url = varsForTemplate[sel.name];
+        if (!url) continue;
+        const attachDir = profile.attachmentPath || "Attachment/";
+        try {
+          const attachName = varsForTemplate["TITLE"] || profile.name || "attachment";
+          const savedPath = await downloadAndSaveAttachment(
+            currentConfig.apiUrl, currentConfig.apiKey,
+            renderPathTemplate(attachDir, varsForTemplate),
+            url, attachName
+          );
+          varsForTemplate[sel.name] = savedPath;
+        } catch (e) {
+          console.warn(`[OBClipper] ${t("popup.attachDownloadFail", { name: sel.name })}`, e.message);
+        }
       }
+      const content = renderTemplate(profile.template || "", varsForTemplate);
+      const filePath = renderPathTemplate(profile.vaultPath || "Clipper/{{TITLE}}.md", varsForTemplate);
+      await saveToObsidian(currentConfig.apiUrl, currentConfig.apiKey, filePath, content);
     }
 
-    const content = renderTemplate(profile.template || "", varsForTemplate);
-    const filePath = renderPathTemplate(profile.vaultPath || "", varsForTemplate);
-
-    if (!filePath) {
-      showStatus(t("popup.noPath"), "error");
-      $extractBtn.disabled = false;
-      $extractBtn.textContent = t("popup.extractBtn");
-      return;
-    }
-
-    await saveToObsidian(
-      currentConfig.apiUrl,
-      currentConfig.apiKey,
-      filePath,
-      content
-    );
     showStatus(t("popup.saved"), "success");
   } catch (e) {
     showStatus(e.message, "error");

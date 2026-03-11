@@ -1,17 +1,19 @@
 // ---- Storage helpers ----
 
 async function loadConfig() {
-  const { apiUrl, apiKey, profiles, defaultProfileId } = await chrome.storage.local.get([
+  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile } = await chrome.storage.local.get([
     "apiUrl",
     "apiKey",
     "profiles",
     "defaultProfileId",
+    "aiProfile",
   ]);
   return {
     apiUrl: apiUrl || "https://127.0.0.1:27124",
     apiKey: apiKey || "",
     profiles: profiles || [],
     defaultProfileId: defaultProfileId || null,
+    aiProfile: aiProfile || { enabled: true, vaultPath: "", selectors: [], sites: {} },
   };
 }
 
@@ -245,6 +247,9 @@ async function init() {
     showHint(document.getElementById("apiSaveHint"), t("hint.saved"));
   });
 
+  // ---- AI Chat Profile ----
+  initAIProfileEditor(cfg.aiProfile);
+
   cfg.profiles.forEach((p) => {
     p._isDefault = (p.id === cfg.defaultProfileId);
     $profileList.appendChild(createProfileEditor(p));
@@ -304,6 +309,108 @@ async function init() {
     }
     $importFile.value = "";
   });
+}
+
+// ---- AI Chat Profile Editor ----
+
+function initAIProfileEditor(ai) {
+  const $enabled = document.getElementById("aiEnabled");
+  const $body = document.getElementById("aiBody");
+  const $urlList = document.getElementById("aiUrlList");
+  const $siteSelectors = document.getElementById("aiSiteSelectors");
+  const $selectorList = document.getElementById("aiSelectorList");
+  const $vaultPath = document.getElementById("aiVaultPath");
+
+  // Enable toggle
+  $enabled.checked = ai.enabled !== false;
+  $body.style.display = $enabled.checked ? "" : "none";
+  $enabled.addEventListener("change", () => {
+    $body.style.display = $enabled.checked ? "" : "none";
+  });
+
+  // Built-in URL list
+  AI_CHAT_SITES.forEach((site) => {
+    site.urlPatterns.forEach((pat) => {
+      const div = document.createElement("div");
+      div.className = "ai-url-item";
+      div.innerHTML = `<code>${pat}</code>`;
+      $urlList.appendChild(div);
+    });
+  });
+
+  // Per-site selector editors
+  AI_CHAT_SITES.forEach((site) => {
+    const overrides = ai.sites?.[site.id] || {};
+    const block = document.createElement("div");
+    block.className = "ai-site-block";
+    block.dataset.siteId = site.id;
+    block.innerHTML = `
+      <div class="ai-site-name">${site.name} <span style="font-weight:400;color:var(--text-muted);font-size:11px">${site.urlPatterns[0]}</span></div>
+      <div class="field">
+        <label data-i18n="ai.titleSelector">${t("ai.titleSelector")}</label>
+        <input type="text" class="ai-sel-title" value="${escapeAttr(overrides.titleSelector || site.titleSelector)}" placeholder="title">
+      </div>
+      <div class="field">
+        <label data-i18n="ai.userSelector">${t("ai.userSelector")}</label>
+        <input type="text" class="ai-sel-user" value="${escapeAttr(overrides.userSelector || site.userSelector)}" placeholder="">
+      </div>
+      <div class="field">
+        <label data-i18n="ai.assistantSelector">${t("ai.assistantSelector")}</label>
+        <input type="text" class="ai-sel-assistant" value="${escapeAttr(overrides.assistantSelector || site.assistantSelector)}" placeholder="">
+      </div>
+      <div class="field">
+        <label data-i18n="ai.userStripSelector">${t("ai.userStripSelector")}</label>
+        <input type="text" class="ai-sel-strip" value="${escapeAttr(overrides.userStripSelector || site.userStripSelector)}" placeholder="">
+      </div>
+    `;
+    $siteSelectors.appendChild(block);
+  });
+
+  // YAML selectors
+  (ai.selectors || []).forEach((s) => {
+    $selectorList.appendChild(createSelectorRow(s.name, s.selector, "", s.attr || "", false));
+  });
+  document.getElementById("aiAddSelectorBtn").addEventListener("click", () => {
+    $selectorList.appendChild(createSelectorRow());
+  });
+
+  // Vault path
+  $vaultPath.value = ai.vaultPath || "";
+
+  // Save button
+  document.getElementById("aiSaveBtn").addEventListener("click", async () => {
+    const sites = {};
+    document.querySelectorAll(".ai-site-block").forEach((block) => {
+      const id = block.dataset.siteId;
+      sites[id] = {
+        titleSelector: block.querySelector(".ai-sel-title").value.trim(),
+        userSelector: block.querySelector(".ai-sel-user").value.trim(),
+        assistantSelector: block.querySelector(".ai-sel-assistant").value.trim(),
+        userStripSelector: block.querySelector(".ai-sel-strip").value.trim(),
+      };
+    });
+
+    const selectors = [];
+    $selectorList.querySelectorAll(".selector-row").forEach((row) => {
+      const name = row.querySelector(".var-name").value.trim();
+      const selector = row.querySelector(".var-selector").value.trim();
+      const attr = row.querySelector(".var-attr").value.trim();
+      if (name && selector) selectors.push({ name, selector, attr });
+    });
+
+    const aiProfile = {
+      enabled: $enabled.checked,
+      vaultPath: $vaultPath.value.trim(),
+      selectors,
+      sites,
+    };
+    await chrome.storage.local.set({ aiProfile });
+    showHint(document.getElementById("aiSaveHint"), t("hint.saved"));
+  });
+}
+
+function escapeAttr(str) {
+  return (str || "").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 init();

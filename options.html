@@ -42,6 +42,50 @@
       <span class="save-hint" id="apiSaveHint"></span>
     </section>
 
+    <!-- AI Chat Profile -->
+    <section class="card" id="ai-section">
+      <div class="section-header">
+        <h2 data-i18n="ai.title">AI Chat</h2>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="aiEnabled">
+            <span class="toggle-slider"></span>
+          </label>
+          <span data-i18n="ai.enabled">Enable</span>
+        </div>
+      </div>
+
+      <div id="aiBody">
+        <!-- Built-in URL patterns (read-only) -->
+        <div class="field">
+          <label data-i18n="ai.builtinUrls">Built-in URL rules (read-only):</label>
+          <div id="aiUrlList" class="ai-url-list"></div>
+        </div>
+
+        <!-- Per-site selectors -->
+        <div class="field">
+          <label data-i18n="ai.siteSelectors">Site Selectors</label>
+          <div id="aiSiteSelectors"></div>
+        </div>
+
+        <!-- YAML selectors -->
+        <div class="field">
+          <label data-i18n="ai.yamlLabel">YAML Properties (optional)</label>
+          <div id="aiSelectorList" class="selector-list"></div>
+          <button class="btn-ghost" id="aiAddSelectorBtn" data-i18n="profile.addVarBtn">+ Add Variable</button>
+        </div>
+
+        <!-- Save path -->
+        <div class="field">
+          <label data-i18n="profile.vaultPathLabel">Save Path</label>
+          <input type="text" id="aiVaultPath" placeholder="AI Chat/{{TITLE}}.md">
+        </div>
+
+        <button class="btn-primary" id="aiSaveBtn" data-i18n="ai.saveBtn">Save AI Chat Settings</button>
+        <span class="save-hint" id="aiSaveHint"></span>
+      </div>
+    </section>
+
     <!-- Profiles -->
     <section class="card" id="profiles-section">
       <div class="section-header">
@@ -211,6 +255,7 @@
   </datalist>
 
   <script src="i18n.js"></script>
+  <script src="ai-chat-config.js"></script>
   <script src="options.js"></script>
 </body>
 </html>
