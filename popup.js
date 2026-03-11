@@ -13,7 +13,7 @@ async function loadConfig() {
     apiKey: apiKey || "",
     profiles: profiles || [],
     defaultProfileId: defaultProfileId || null,
-    aiProfile: aiProfile || { enabled: true, vaultPath: "", selectors: [], sites: {} },
+    aiProfile: aiProfile || { enabled: true, template: "", vaultPath: "", selectors: [] },
   };
 }
 
@@ -496,7 +496,7 @@ async function init() {
 
   // Then check AI profile
   if (!autoMatchedId && aiEnabled) {
-    const aiSite = getMatchedAIChatSite(currentUrl, currentConfig.aiProfile.sites);
+    const aiSite = getMatchedAIChatSite(currentUrl);
     if (aiSite) {
       autoMatchedId = AI_PROFILE_ID;
     }
@@ -560,7 +560,7 @@ async function onProfileSelected() {
 
     if (isAI) {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const siteConfig = getMatchedAIChatSite(tab.url, currentConfig.aiProfile.sites);
+      const siteConfig = getMatchedAIChatSite(tab.url);
       if (siteConfig) {
         currentVars.CONTENT = await extractAIChatContent(tab.id, siteConfig);
         if (siteConfig.titleSelector) {
@@ -630,14 +630,10 @@ async function doExtractAndSave() {
 
     if (isAI) {
       const ai = currentConfig.aiProfile;
-      let yaml = "---\n";
-      for (const sel of (ai.selectors || [])) {
-        if (sel.name && varsForTemplate[sel.name] !== undefined) {
-          yaml += `${sel.name}: "${(varsForTemplate[sel.name] || "").replace(/"/g, '\\"')}"\n`;
-        }
-      }
-      yaml += "---\n\n";
-      const fileContent = yaml + (varsForTemplate.CONTENT || "");
+      const templatePart = renderTemplate(ai.template || "", varsForTemplate);
+      const fileContent = templatePart
+        ? templatePart + "\n\n" + (varsForTemplate.CONTENT || "")
+        : (varsForTemplate.CONTENT || "");
       const filePath = renderPathTemplate(ai.vaultPath || "AI Chat/{{TITLE}}.md", varsForTemplate);
 
       await saveToObsidian(currentConfig.apiUrl, currentConfig.apiKey, filePath, fileContent);

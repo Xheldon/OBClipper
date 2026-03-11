@@ -30,22 +30,16 @@ const AI_CHAT_SITES = [
   },
 ];
 
-function getMatchedAIChatSite(url, siteOverrides) {
+function getMatchedAIChatSite(url) {
   for (const site of AI_CHAT_SITES) {
-    const overrides = siteOverrides?.[site.id] || {};
-    const merged = { ...site, ...overrides };
     for (const pattern of site.urlPatterns) {
       const escaped = pattern
         .replace(/[.+^${}()|[\]\\]/g, "\\$&")
         .replace(/\*/g, ".*");
       if (new RegExp("^" + escaped + "$").test(url)) {
-        return merged;
+        return site;
       }
     }
   }
   return null;
-}
-
-function getAllAIChatUrlPatterns() {
-  return AI_CHAT_SITES.flatMap((s) => s.urlPatterns);
 }

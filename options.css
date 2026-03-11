@@ -338,38 +338,14 @@ header h1 {
   color: var(--primary);
 }
 
-.ai-site-block {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  margin-bottom: 8px;
-}
-
-.ai-site-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.ai-site-block .field {
-  margin-bottom: 8px;
-}
-
-.ai-site-block .field:last-child {
-  margin-bottom: 0;
-}
-
-.ai-site-block label {
+.ai-content-hint {
   font-size: 11px;
-  min-width: 70px;
-}
-
-.ai-site-block input {
-  width: 100%;
-  font-family: "SF Mono", "Menlo", "Monaco", monospace;
-  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(138, 92, 245, 0.05);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--primary);
 }
 
 /* Import / Export */
