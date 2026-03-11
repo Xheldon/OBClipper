@@ -1,15 +1,17 @@
 // ---- Storage helpers ----
 
 async function loadConfig() {
-  const { apiUrl, apiKey, profiles } = await chrome.storage.local.get([
+  const { apiUrl, apiKey, profiles, defaultProfileId } = await chrome.storage.local.get([
     "apiUrl",
     "apiKey",
     "profiles",
+    "defaultProfileId",
   ]);
   return {
     apiUrl: apiUrl || "https://127.0.0.1:27124",
     apiKey: apiKey || "",
     profiles: profiles || [],
+    defaultProfileId: defaultProfileId || null,
   };
 }
 
@@ -99,6 +101,20 @@ function createProfileEditor(profile) {
     "\n"
   );
 
+  // Default profile
+  const defaultToggle = el.querySelector(".default-profile-toggle");
+  defaultToggle.checked = !!profile._isDefault;
+  defaultToggle.addEventListener("change", async () => {
+    if (defaultToggle.checked) {
+      document.querySelectorAll(".default-profile-toggle").forEach((t) => {
+        if (t !== defaultToggle) t.checked = false;
+      });
+      await chrome.storage.local.set({ defaultProfileId: profile.id });
+    } else {
+      await chrome.storage.local.set({ defaultProfileId: null });
+    }
+  });
+
   // Selectors
   const selectorList = el.querySelector(".selector-list");
   const hasAnyTransform = (profile.selectors || []).some((s) => s.transform);
@@ -126,6 +142,9 @@ function createProfileEditor(profile) {
     const cfg = await loadConfig();
     cfg.profiles = cfg.profiles.filter((p) => p.id !== profile.id);
     await saveProfiles(cfg.profiles);
+    if (cfg.defaultProfileId === profile.id) {
+      await chrome.storage.local.set({ defaultProfileId: null });
+    }
   });
 
   // Save
@@ -227,6 +246,7 @@ async function init() {
   });
 
   cfg.profiles.forEach((p) => {
+    p._isDefault = (p.id === cfg.defaultProfileId);
     $profileList.appendChild(createProfileEditor(p));
   });
 

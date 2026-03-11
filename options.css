@@ -214,6 +214,15 @@ header h1 {
   display: block;
 }
 
+.help-tooltip code {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: "SF Mono", "Menlo", "Monaco", monospace;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 /* Selector row */
 .selector-list {
   display: flex;
@@ -292,6 +301,13 @@ header h1 {
   color: var(--text-muted);
   margin-left: 4px;
   vertical-align: middle;
+}
+
+/* Default profile hint */
+.default-profile-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 4px;
 }
 
 /* URL patterns */

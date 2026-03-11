@@ -1,15 +1,17 @@
 // ---- Helpers ----
 
 async function loadConfig() {
-  const { apiUrl, apiKey, profiles } = await chrome.storage.local.get([
+  const { apiUrl, apiKey, profiles, defaultProfileId } = await chrome.storage.local.get([
     "apiUrl",
     "apiKey",
     "profiles",
+    "defaultProfileId",
   ]);
   return {
     apiUrl: apiUrl || "https://127.0.0.1:27124",
     apiKey: apiKey || "",
     profiles: profiles || [],
+    defaultProfileId: defaultProfileId || null,
   };
 }
 
@@ -51,17 +53,65 @@ function hideStatus() {
   document.getElementById("status").style.display = "none";
 }
 
+// ---- Extract page content via defuddle ----
+
+async function extractContent(tabId) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["lib/defuddle.js"],
+    });
+  } catch (e) {
+    console.warn("[OBClipper] Failed to inject defuddle:", e.message);
+    return "";
+  }
+
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        if (typeof Defuddle === "undefined") return "";
+        try {
+          const attempts = [
+            { markdown: true },
+            { markdown: true, removeHiddenElements: false },
+            { markdown: true, removeHiddenElements: false, removeLowScoring: false, removePartialSelectors: false },
+          ];
+          for (const opts of attempts) {
+            const result = new Defuddle(document, opts).parse();
+            if (result.content && result.wordCount > 0) {
+              return result.content;
+            }
+          }
+          return "";
+        } catch (e) {
+          return "";
+        }
+      },
+    });
+    return results[0]?.result || "";
+  } catch (e) {
+    console.warn("[OBClipper] Content extraction failed:", e.message);
+    return "";
+  }
+}
+
 // ---- Extract variables from the active tab ----
 
 async function extractVariables(selectors) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-  const builtinVars = {
-    URL: tab.url || "",
-    TITLE: tab.title || "",
-    DATE: new Date().toISOString().split("T")[0],
-    TIMESTAMP: new Date().toISOString(),
-  };
+  const [content, builtinBase] = await Promise.all([
+    extractContent(tab.id),
+    Promise.resolve({
+      URL: tab.url || "",
+      TITLE: tab.title || "",
+      DATE: new Date().toISOString().split("T")[0],
+      TIMESTAMP: new Date().toISOString(),
+    }),
+  ]);
+
+  const builtinVars = { ...builtinBase, CONTENT: content };
 
   const results = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
@@ -364,18 +414,25 @@ async function init() {
     }
   }
 
+  const selectedId = autoMatchedId
+    || (currentConfig.defaultProfileId && profiles.some((p) => p.id === currentConfig.defaultProfileId)
+        ? currentConfig.defaultProfileId
+        : null);
+
   profiles.forEach((p) => {
     const opt = document.createElement("option");
     opt.value = p.id;
     opt.textContent = p.name || t("popup.unnamed");
     if (p.id === autoMatchedId) {
       opt.textContent += " " + t("popup.autoMatched");
+    } else if (!autoMatchedId && p.id === currentConfig.defaultProfileId) {
+      opt.textContent += " " + t("popup.default");
     }
     $select.appendChild(opt);
   });
 
-  if (autoMatchedId) {
-    $select.value = autoMatchedId;
+  if (selectedId) {
+    $select.value = selectedId;
   }
 
   $select.addEventListener("change", () => onProfileSelected());
@@ -391,19 +448,28 @@ async function onProfileSelected() {
   $extractBtn.disabled = true;
 
   const profile = currentConfig.profiles.find((p) => p.id === $select.value);
-  if (!profile || !profile.selectors.length) return;
+  if (!profile) return;
 
   try {
     currentVars = await extractVariables(profile.selectors);
 
     $varPreview.innerHTML = "";
+    const $contentField = document.getElementById("contentPreviewField");
+    const $contentPreview = document.getElementById("contentPreview");
+    $contentField.style.display = "none";
+
     for (const [key, val] of Object.entries(currentVars)) {
+      if (key === "CONTENT") {
+        $contentPreview.textContent = val || t("popup.empty");
+        $contentField.style.display = "";
+        continue;
+      }
       const sel = profile.selectors.find((s) => s.name === key);
       const badge = sel?.attachment ? ` <span class="att-badge">${t("popup.attachBadge")}</span>` : "";
       const displayVal = val || `<span class="var-empty">${t("popup.empty")}</span>`;
       const row = document.createElement("div");
       row.className = "var-row";
-      row.innerHTML = `<span class="var-key">${escapeHtml(key)}:${badge}</span><span class="var-val" title="${escapeHtml(val)}">${val ? escapeHtml(truncate(val, 50)) : displayVal}</span>`;
+      row.innerHTML = `<span class="var-key">${escapeHtml(key)}:${badge}</span><span class="var-val" title="${escapeHtml(truncate(val, 200))}">${val ? escapeHtml(truncate(val, 50)) : displayVal}</span>`;
       $varPreview.appendChild(row);
     }
 

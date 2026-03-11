@@ -97,6 +97,18 @@
         <textarea class="url-patterns" rows="3" placeholder="https://example.com/posts/*&#10;https://blog.example.com/*"></textarea>
       </div>
 
+      <!-- Default Profile -->
+      <div class="field">
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" class="default-profile-toggle">
+            <span class="toggle-slider"></span>
+          </label>
+          <span data-i18n="profile.defaultProfile">Default Profile</span>
+          <span class="default-profile-hint" data-i18n="profile.defaultProfileHint">(used when no URL matches)</span>
+        </div>
+      </div>
+
       <!-- Selectors -->
       <div class="field">
         <div class="selector-label-wrap">
@@ -122,13 +134,37 @@
 
       <!-- Template -->
       <div class="field">
-        <label data-i18n="profile.templateLabel">File Template (use {{variable}} to reference)</label>
+        <div class="selector-label-wrap">
+          <label style="margin-bottom:0" data-i18n="profile.templateLabel">File Template (use {{variable}} to reference)</label>
+          <span class="help-icon">?
+            <span class="help-tooltip help-tooltip-builtin">
+              <span data-i18n-html="profile.helpBuiltinTitle"></span><br>
+              <span data-i18n-html="profile.helpBuiltinUrl"></span><br>
+              <span data-i18n-html="profile.helpBuiltinTitle2"></span><br>
+              <span data-i18n-html="profile.helpBuiltinContent"></span><br>
+              <span data-i18n-html="profile.helpBuiltinDate"></span><br>
+              <span data-i18n-html="profile.helpBuiltinTimestamp"></span>
+            </span>
+          </span>
+        </div>
         <textarea class="template-input" rows="8" placeholder="---&#10;title: {{title}}&#10;---&#10;&#10;{{content}}"></textarea>
       </div>
 
       <!-- Vault path -->
       <div class="field">
-        <label data-i18n="profile.vaultPathLabel">Save Path (relative to Vault root, e.g. Articles/{{title}}.md)</label>
+        <div class="selector-label-wrap">
+          <label style="margin-bottom:0" data-i18n="profile.vaultPathLabel">Save Path (relative to Vault root, e.g. Articles/{{title}}.md)</label>
+          <span class="help-icon">?
+            <span class="help-tooltip help-tooltip-builtin">
+              <span data-i18n-html="profile.helpBuiltinTitle"></span><br>
+              <span data-i18n-html="profile.helpBuiltinUrl"></span><br>
+              <span data-i18n-html="profile.helpBuiltinTitle2"></span><br>
+              <span data-i18n-html="profile.helpBuiltinContent"></span><br>
+              <span data-i18n-html="profile.helpBuiltinDate"></span><br>
+              <span data-i18n-html="profile.helpBuiltinTimestamp"></span>
+            </span>
+          </span>
+        </div>
         <input type="text" class="vault-path" placeholder="Clippings/{{title}}.md">
       </div>
 

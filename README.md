@@ -50,6 +50,7 @@ Available in templates and paths without needing CSS selectors:
 |----------|-------------|
 | `{{URL}}` | Current page URL |
 | `{{TITLE}}` | Current page title |
+| `{{CONTENT}}` | Main content of the page in Markdown (extracted via [defuddle](https://github.com/kepano/defuddle)) |
 | `{{DATE}}` | Current date (YYYY-MM-DD) |
 | `{{TIMESTAMP}}` | Current timestamp (ISO format) |
 

@@ -50,6 +50,7 @@
 |------|------|
 | `{{URL}}` | 当前页面 URL |
 | `{{TITLE}}` | 当前页面标题 |
+| `{{CONTENT}}` | 页面主要内容的 Markdown 格式（通过 [defuddle](https://github.com/kepano/defuddle) 提取） |
 | `{{DATE}}` | 当前日期（YYYY-MM-DD） |
 | `{{TIMESTAMP}}` | 当前时间（ISO 格式） |
 
