@@ -80,31 +80,23 @@
               <span class="help-tooltip">
                 <span data-i18n-html="profile.helpVarName"></span><br>
                 <span data-i18n-html="profile.helpSelector"></span><br>
-                <span data-i18n-html="profile.helpAttr"></span>
+                <span data-i18n-html="profile.helpTransform"></span>
               </span>
             </span>
           </div>
           <div id="aiSelectorList" class="selector-list"></div>
           <button class="btn-ghost" id="aiAddSelectorBtn" data-i18n="profile.addVarBtn">+ Add Variable</button>
+          <label class="toggle transform-toggle-wrap" style="margin-top:6px">
+            <input type="checkbox" id="aiShowTransform">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label-text" data-i18n="profile.showTransform">Show JS transform code</span>
         </div>
 
         <!-- Template -->
         <div class="field">
-          <div class="selector-label-wrap">
-            <label style="margin-bottom:0" data-i18n="ai.templateLabel">File Template</label>
-            <span class="help-icon">?
-              <span class="help-tooltip help-tooltip-builtin">
-                <span data-i18n-html="profile.helpBuiltinTitle"></span><br>
-                <span data-i18n-html="profile.helpBuiltinUrl"></span><br>
-                <span data-i18n-html="profile.helpBuiltinTitle2"></span><br>
-                <span data-i18n-html="profile.helpBuiltinDate"></span><br>
-                <span data-i18n-html="profile.helpBuiltinTimestamp"></span><br>
-                <span data-i18n-html="ai.helpContentHint"></span>
-              </span>
-            </span>
-          </div>
+          <label data-i18n="ai.templateLabel">File Template ({{CONTENT}} auto-appended at the end)</label>
           <textarea id="aiTemplate" rows="6" placeholder="---&#10;title: {{TITLE}}&#10;date: {{DATE}}&#10;---"></textarea>
-          <div class="ai-content-hint" data-i18n="ai.contentAutoAppend">{{CONTENT}} will be automatically appended after the template. No need to add it manually.</div>
         </div>
 
         <!-- Save path -->

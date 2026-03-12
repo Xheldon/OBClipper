@@ -35,7 +35,7 @@ function uid() {
 
 const $profileList = document.getElementById("profileList");
 
-function createSelectorRow(varName = "", selector = "", transform = "", attr = "", attachment = false) {
+function createSelectorRow(varName = "", selector = "", transform = "", attr = "", attachment = false, { simple = false } = {}) {
   const tpl = document.getElementById("selectorRowTpl");
   const row = tpl.content.cloneNode(true).querySelector(".selector-row");
   row.querySelector(".var-name").value = varName;
@@ -46,7 +46,10 @@ function createSelectorRow(varName = "", selector = "", transform = "", attr = "
   row.querySelector(".remove-selector-btn").addEventListener("click", () => {
     row.remove();
   });
-  // Apply i18n to the cloned row
+  if (simple) {
+    row.querySelector(".var-attr").remove();
+    row.querySelector(".attachment-check").remove();
+  }
   applyI18nInEl(row);
   return row;
 }
@@ -340,11 +343,22 @@ function initAIProfileEditor(ai) {
 
   // YAML selectors
   (ai.selectors || []).forEach((s) => {
-    $selectorList.appendChild(createSelectorRow(s.name, s.selector, "", s.attr || "", false));
+    $selectorList.appendChild(createSelectorRow(s.name, s.selector, s.transform || "", "", false, { simple: true }));
   });
   document.getElementById("aiAddSelectorBtn").addEventListener("click", () => {
-    $selectorList.appendChild(createSelectorRow());
+    $selectorList.appendChild(createSelectorRow("", "", "", "", false, { simple: true }));
+    updateAITransformVisibility();
   });
+
+  const $aiTransformToggle = document.getElementById("aiShowTransform");
+  function updateAITransformVisibility() {
+    const show = $aiTransformToggle.checked;
+    $selectorList.querySelectorAll(".selector-row-transform").forEach((el) => {
+      el.style.display = show ? "" : "none";
+    });
+  }
+  $aiTransformToggle.addEventListener("change", updateAITransformVisibility);
+  updateAITransformVisibility();
 
   // Template
   $template.value = ai.template || "";
@@ -358,8 +372,8 @@ function initAIProfileEditor(ai) {
     $selectorList.querySelectorAll(".selector-row").forEach((row) => {
       const name = row.querySelector(".var-name").value.trim();
       const selector = row.querySelector(".var-selector").value.trim();
-      const attr = row.querySelector(".var-attr").value.trim();
-      if (name && selector) selectors.push({ name, selector, attr });
+      const transform = row.querySelector(".var-transform")?.value.trim() || "";
+      if (name && selector) selectors.push({ name, selector, transform });
     });
 
     const aiProfile = {

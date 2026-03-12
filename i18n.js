@@ -51,8 +51,6 @@ const messages = {
     "ai.builtinUrls": "Built-in URL rules (read-only):",
     "ai.yamlLabel": "YAML Properties (optional)",
     "ai.templateLabel": "File Template ({{CONTENT}} auto-appended at the end)",
-    "ai.helpContentHint": "<b>Note</b>: <code>{{CONTENT}}</code> (chat content) is automatically appended after the template — no need to add it manually.",
-    "ai.contentAutoAppend": "{{CONTENT}} will be automatically appended after the template. No need to add it manually.",
     "ai.saveBtn": "Save AI Chat Settings",
     "popup.aiChat": "AI Chat",
     // Import / Export
@@ -139,8 +137,6 @@ const messages = {
     "ai.builtinUrls": "内置匹配网址（不可修改）：",
     "ai.yamlLabel": "YAML 属性（可选）",
     "ai.templateLabel": "文件模板（{{CONTENT}} 自动追加到末尾）",
-    "ai.helpContentHint": "<b>注意</b>：<code>{{CONTENT}}</code>（对话内容）会自动追加到模板末尾，无需手动添加。",
-    "ai.contentAutoAppend": "{{CONTENT}} 会自动追加到模板末尾，无需手动添加。",
     "ai.saveBtn": "保存 AI 对话设置",
     "popup.aiChat": "AI 对话",
     // 导入 / 导出

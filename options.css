@@ -338,16 +338,6 @@ header h1 {
   color: var(--primary);
 }
 
-.ai-content-hint {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 6px;
-  padding: 6px 10px;
-  background: rgba(138, 92, 245, 0.05);
-  border-radius: var(--radius);
-  border-left: 3px solid var(--primary);
-}
-
 /* Import / Export */
 .io-actions {
   display: flex;
