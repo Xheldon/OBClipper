@@ -312,6 +312,47 @@ async function init() {
     }
     $importFile.value = "";
   });
+
+  // ---- Config Sync ----
+
+  document.getElementById("syncPushBtn").addEventListener("click", async () => {
+    try {
+      const cur = await loadConfig();
+      const syncData = {
+        profiles: cur.profiles,
+        defaultProfileId: cur.defaultProfileId,
+        aiProfile: cur.aiProfile,
+      };
+      await chrome.storage.sync.set({ syncedConfig: JSON.stringify(syncData) });
+      showHint(document.getElementById("syncHint"), t("sync.pushOk"));
+    } catch (e) {
+      showHint(document.getElementById("syncHint"), t("sync.pushFail") + e.message);
+    }
+  });
+
+  document.getElementById("syncPullBtn").addEventListener("click", async () => {
+    if (!confirm(t("sync.confirmPull"))) return;
+    try {
+      const { syncedConfig } = await chrome.storage.sync.get("syncedConfig");
+      if (!syncedConfig) {
+        throw new Error(t("sync.noRemote"));
+      }
+      const data = JSON.parse(syncedConfig);
+      if (!data.profiles || !Array.isArray(data.profiles)) {
+        throw new Error(t("hint.invalidConfig"));
+      }
+      const cur = await loadConfig();
+      await chrome.storage.local.set({
+        profiles: data.profiles,
+        defaultProfileId: data.defaultProfileId || null,
+        aiProfile: data.aiProfile || cur.aiProfile,
+      });
+      showHint(document.getElementById("syncHint"), t("sync.pullOk"));
+      setTimeout(() => location.reload(), 800);
+    } catch (e) {
+      showHint(document.getElementById("syncHint"), t("sync.pullFail") + e.message);
+    }
+  });
 }
 
 // ---- AI Chat Profile Editor ----

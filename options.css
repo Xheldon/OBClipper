@@ -344,3 +344,16 @@ header h1 {
   gap: 10px;
   margin-bottom: 4px;
 }
+
+/* Config Sync */
+.sync-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.sync-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 4px;
+}
