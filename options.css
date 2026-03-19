@@ -357,3 +357,38 @@ header h1 {
   gap: 10px;
   margin-bottom: 4px;
 }
+
+/* Section header actions (Profiles) */
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.community-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 13px;
+}
+.community-link:hover {
+  text-decoration: underline;
+}
+.community-link .link-icon {
+  font-size: 14px;
+}
+
+/* Community badge on profile */
+.community-badge {
+  font-size: 14px;
+  margin-left: 6px;
+  cursor: help;
+}
+
+/* Profile highlight animation (for community import) */
+.profile-highlight {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

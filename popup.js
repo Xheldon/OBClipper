@@ -1,12 +1,14 @@
 // ---- Helpers ----
 
 async function loadConfig() {
-  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile } = await chrome.storage.local.get([
+  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile, autoLinkEnabled, autoLinkExcludeFolders } = await chrome.storage.local.get([
     "apiUrl",
     "apiKey",
     "profiles",
     "defaultProfileId",
     "aiProfile",
+    "autoLinkEnabled",
+    "autoLinkExcludeFolders",
   ]);
   return {
     apiUrl: apiUrl || "https://127.0.0.1:27124",
@@ -14,6 +16,8 @@ async function loadConfig() {
     profiles: profiles || [],
     defaultProfileId: defaultProfileId || null,
     aiProfile: aiProfile || { enabled: true, template: "", vaultPath: "", selectors: [] },
+    autoLinkEnabled: autoLinkEnabled !== undefined ? autoLinkEnabled : true,
+    autoLinkExcludeFolders: autoLinkExcludeFolders || "",
   };
 }
 
@@ -293,6 +297,83 @@ async function findAvailablePath(apiUrl, apiKey, dir, baseName, ext) {
     if (i > 100) break;
   }
   return filePath;
+}
+
+// ---- Auto-link vault filenames ----
+
+let _vaultFileCache = null;
+let _vaultFileCacheTime = 0;
+const VAULT_FILE_CACHE_TTL = 60000; // 1 minute
+
+async function fetchAllVaultFiles(apiUrl, apiKey, excludeFolders) {
+  // Return cached result if still fresh
+  if (_vaultFileCache && (Date.now() - _vaultFileCacheTime) < VAULT_FILE_CACHE_TTL) {
+    return filterFileNames(_vaultFileCache, excludeFolders);
+  }
+
+  const allFiles = [];
+  const headers = { Authorization: `Bearer ${apiKey}` };
+
+  async function listDir(dirPath) {
+    const encodedPath = dirPath.split("/").map(s => encodeURIComponent(s)).join("/");
+    const url = `${apiUrl}/vault/${encodedPath}`;
+    const resp = await fetch(url, { headers });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const files = data.files || [];
+    for (const f of files) {
+      const fullPath = dirPath ? dirPath + f : f;
+      if (f.endsWith("/")) {
+        await listDir(fullPath);
+      } else if (f.endsWith(".md")) {
+        allFiles.push(fullPath);
+      }
+    }
+  }
+
+  await listDir("");
+  _vaultFileCache = allFiles;
+  _vaultFileCacheTime = Date.now();
+  return filterFileNames(allFiles, excludeFolders);
+}
+
+function filterFileNames(allFiles, excludeFolders) {
+  const excludes = excludeFolders
+    .split(",")
+    .map(f => f.trim())
+    .filter(Boolean);
+
+  const names = [];
+  for (const filePath of allFiles) {
+    const excluded = excludes.some(folder => {
+      const prefix = folder.endsWith("/") ? folder : folder + "/";
+      return filePath.startsWith(prefix);
+    });
+    if (excluded) continue;
+    const parts = filePath.split("/");
+    const basename = parts[parts.length - 1].replace(/\.md$/, "");
+    if (basename) names.push(basename);
+  }
+
+  // Sort by length descending so longer names match first
+  names.sort((a, b) => b.length - a.length);
+  return [...new Set(names)];
+}
+
+function autoLinkContent(content, fileNames) {
+  if (!content || !fileNames.length) return content;
+
+  let result = content;
+  for (const name of fileNames) {
+    // Escape special regex characters in the filename
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Don't match if already wrapped in [[...]]
+    const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`);
+    if (regex.test(result)) {
+      result = result.replace(regex, `[[${name}]]`);
+    }
+  }
+  return result;
 }
 
 // Download image by drawing it on a canvas in the page context
@@ -627,6 +708,20 @@ async function doExtractAndSave() {
 
   try {
     const varsForTemplate = { ...currentVars };
+
+    // Auto-link vault filenames in CONTENT
+    if (currentConfig.autoLinkEnabled && varsForTemplate.CONTENT) {
+      try {
+        const fileNames = await fetchAllVaultFiles(
+          currentConfig.apiUrl,
+          currentConfig.apiKey,
+          currentConfig.autoLinkExcludeFolders
+        );
+        varsForTemplate.CONTENT = autoLinkContent(varsForTemplate.CONTENT, fileNames);
+      } catch (e) {
+        console.warn("[OBClipper] Auto-link failed:", e.message);
+      }
+    }
 
     if (isAI) {
       const ai = currentConfig.aiProfile;

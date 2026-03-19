@@ -21,5 +21,8 @@
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
+  },
+  "externally_connectable": {
+    "matches": ["https://example.com/*"]
   }
 }

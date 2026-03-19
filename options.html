@@ -42,11 +42,39 @@
       <span class="save-hint" id="apiSaveHint"></span>
     </section>
 
+    <!-- Auto-link Settings -->
+    <section class="card" id="autolink-section">
+      <h2 data-i18n="autolink.title">Auto-link</h2>
+      <div class="field">
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="autoLinkEnabled" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span data-i18n="autolink.toggle">Auto-link vault filenames in clipped content (first occurrence only)</span>
+        </div>
+      </div>
+      <div class="field" id="autoLinkExcludeField">
+        <label data-i18n="autolink.excludeFolders">Exclude folders (comma-separated)</label>
+        <input type="text" id="autoLinkExcludeFolders"
+               data-i18n-placeholder="autolink.excludePlaceholder"
+               placeholder="e.g. Templates, Archive/old">
+      </div>
+      <button class="btn-primary" id="saveAutoLinkBtn" data-i18n="autolink.saveBtn">Save</button>
+      <span class="save-hint" id="autoLinkSaveHint"></span>
+    </section>
+
     <!-- Profiles -->
     <section class="card" id="profiles-section">
       <div class="section-header">
         <h2 data-i18n="profiles.title">Profiles</h2>
-        <button class="btn-primary" id="addProfileBtn" data-i18n="profiles.addBtn">+ New Profile</button>
+        <div class="section-header-actions">
+          <a class="community-link" id="communityProfilesLink" href="#" target="_blank">
+            <span class="link-icon">🔗</span>
+            <span data-i18n="profiles.communityLink">Browse Community Profiles</span>
+          </a>
+          <button class="btn-primary" id="addProfileBtn" data-i18n="profiles.addBtn">+ New Profile</button>
+        </div>
       </div>
 
       <div id="profileList"></div>

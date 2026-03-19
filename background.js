@@ -1,5 +1,38 @@
 // Background service worker — handles fetch requests that may be blocked by CORS in popup
 
+// ---- External message handler (community profile import) ----
+
+chrome.runtime.onMessageExternal.addListener((msg, sender, sendResponse) => {
+  if (msg.type === "importProfile" && msg.profile) {
+    handleImportProfile(msg.profile).then(sendResponse).catch((e) => sendResponse({ success: false, error: e.message }));
+    return true;
+  }
+});
+
+async function handleImportProfile(profile) {
+  const { profiles } = await chrome.storage.local.get("profiles");
+  const list = profiles || [];
+  const newId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const imported = {
+    id: newId,
+    name: profile.name || "",
+    autoMatch: !!profile.autoMatch,
+    urlPatterns: profile.urlPatterns || [],
+    selectors: profile.selectors || [],
+    template: profile.template || "",
+    vaultPath: profile.vaultPath || "",
+    attachmentPath: profile.attachmentPath || "",
+    source: "community",
+  };
+  list.push(imported);
+  await chrome.storage.local.set({ profiles: list });
+  // Open options page scrolled to new profile
+  chrome.tabs.create({ url: chrome.runtime.getURL(`options.html?highlight=${newId}`) });
+  return { success: true, id: newId };
+}
+
+// ---- Internal message handler ----
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "fetch") {
     doFetch(msg.url, msg.options)

@@ -6,7 +6,27 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(git:*)",
-      "Bash(npm list:*)"
+      "Bash(npm list:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(python3 -c \"from PIL import Image; img = Image.open\\(''icons/Gemini_Generated_Image_s8l3sos8l3sos8l3.png''\\); print\\(img.size, img.mode\\)\")",
+      "Bash(where magick:*)",
+      "Bash(where python:*)",
+      "Bash(where ffmpeg:*)",
+      "Bash(where pwsh:*)",
+      "Bash(where node:*)",
+      "Bash(command -v node)",
+      "Bash(command -v npx)",
+      "Bash(cmd //c \"node -v\")",
+      "Bash(cmd //c \"where node\")",
+      "Bash(cmd //c \"where python\")",
+      "Bash(cmd //c \"where magick\")",
+      "Bash(cmd //c \"where powershell\")",
+      "Bash(dir \"d:\\\\repo\\\\OBClipper\\\\icons\")",
+      "Bash(node -e \"const sharp = require\\(''sharp''\\); console.log\\(''sharp available''\\);\")",
+      "Bash(node -e \"console.log\\(''node works''\\)\")",
+      "Bash(powershell -Command \"Write-Output ''hello''\")",
+      "Bash(node -e \"const fs=require\\(''fs''\\); fs.writeFileSync\\(''d:/repo/OBClipper/_test.txt'',''node works\\\\n''\\)\")"
     ]
   }
 }

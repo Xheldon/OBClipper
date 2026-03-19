@@ -1,12 +1,14 @@
 // ---- Storage helpers ----
 
 async function loadConfig() {
-  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile } = await chrome.storage.local.get([
+  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile, autoLinkEnabled, autoLinkExcludeFolders } = await chrome.storage.local.get([
     "apiUrl",
     "apiKey",
     "profiles",
     "defaultProfileId",
     "aiProfile",
+    "autoLinkEnabled",
+    "autoLinkExcludeFolders",
   ]);
   return {
     apiUrl: apiUrl || "https://127.0.0.1:27124",
@@ -14,6 +16,8 @@ async function loadConfig() {
     profiles: profiles || [],
     defaultProfileId: defaultProfileId || null,
     aiProfile: aiProfile || { enabled: true, template: "", vaultPath: "", selectors: [] },
+    autoLinkEnabled: autoLinkEnabled !== undefined ? autoLinkEnabled : true,
+    autoLinkExcludeFolders: autoLinkExcludeFolders || "",
   };
 }
 
@@ -73,6 +77,7 @@ function createProfileEditor(profile) {
   const tpl = document.getElementById("profileEditorTpl");
   const el = tpl.content.cloneNode(true).querySelector(".profile-editor");
   el.dataset.id = profile.id;
+  if (profile.source) el.dataset.source = profile.source;
 
   el.querySelector(".profile-name").value = profile.name || "";
 
@@ -80,6 +85,13 @@ function createProfileEditor(profile) {
   const collapseHeader = el.querySelector(".profile-collapse-header");
   const collapseName = el.querySelector(".profile-collapse-name");
   collapseName.textContent = profile.name || t("profile.unnamed");
+  if (profile.source === "community") {
+    const badge = document.createElement("span");
+    badge.className = "community-badge";
+    badge.textContent = "🌐";
+    badge.title = t("profile.communityBadge");
+    collapseName.parentElement.insertBefore(badge, collapseName.nextSibling);
+  }
   collapseHeader.addEventListener("click", (e) => {
     if (e.target.closest(".delete-profile-btn")) return;
     el.classList.toggle("collapsed");
@@ -196,7 +208,7 @@ function readProfileFromEditor(el) {
     ? urlText.split("\n").map((l) => l.trim()).filter(Boolean)
     : [];
 
-  return {
+  const result = {
     id: el.dataset.id,
     name: el.querySelector(".profile-name").value.trim(),
     autoMatch: el.querySelector(".auto-match-toggle").checked,
@@ -206,6 +218,8 @@ function readProfileFromEditor(el) {
     vaultPath: el.querySelector(".vault-path").value.trim(),
     attachmentPath: el.querySelector(".attachment-path").value.trim(),
   };
+  if (el.dataset.source === "community") result.source = "community";
+  return result;
 }
 
 function showHint(el, msg) {
@@ -248,6 +262,17 @@ async function init() {
     const key = document.getElementById("apiKey").value.trim();
     await saveApiConfig(url, key);
     showHint(document.getElementById("apiSaveHint"), t("hint.saved"));
+  });
+
+  // ---- Auto-link settings ----
+  document.getElementById("autoLinkEnabled").checked = cfg.autoLinkEnabled !== false;
+  document.getElementById("autoLinkExcludeFolders").value = cfg.autoLinkExcludeFolders || "";
+  document.getElementById("saveAutoLinkBtn").addEventListener("click", async () => {
+    await chrome.storage.local.set({
+      autoLinkEnabled: document.getElementById("autoLinkEnabled").checked,
+      autoLinkExcludeFolders: document.getElementById("autoLinkExcludeFolders").value.trim(),
+    });
+    showHint(document.getElementById("autoLinkSaveHint"), t("hint.saved"));
   });
 
   // ---- AI Chat Profile ----
@@ -304,6 +329,8 @@ async function init() {
         apiUrl: data.apiUrl || "https://127.0.0.1:27124",
         apiKey: data.apiKey || "",
         profiles: data.profiles,
+        autoLinkEnabled: data.autoLinkEnabled !== undefined ? data.autoLinkEnabled : true,
+        autoLinkExcludeFolders: data.autoLinkExcludeFolders || "",
       });
       showHint(document.getElementById("ioHint"), t("hint.imported"));
       setTimeout(() => location.reload(), 800);
@@ -322,6 +349,8 @@ async function init() {
         profiles: cur.profiles,
         defaultProfileId: cur.defaultProfileId,
         aiProfile: cur.aiProfile,
+        autoLinkEnabled: cur.autoLinkEnabled,
+        autoLinkExcludeFolders: cur.autoLinkExcludeFolders,
       };
       await chrome.storage.sync.set({ syncedConfig: JSON.stringify(syncData) });
       showHint(document.getElementById("syncHint"), t("sync.pushOk"));
@@ -346,6 +375,8 @@ async function init() {
         profiles: data.profiles,
         defaultProfileId: data.defaultProfileId || null,
         aiProfile: data.aiProfile || cur.aiProfile,
+        autoLinkEnabled: data.autoLinkEnabled !== undefined ? data.autoLinkEnabled : true,
+        autoLinkExcludeFolders: data.autoLinkExcludeFolders || "",
       });
       showHint(document.getElementById("syncHint"), t("sync.pullOk"));
       setTimeout(() => location.reload(), 800);
@@ -353,6 +384,23 @@ async function init() {
       showHint(document.getElementById("syncHint"), t("sync.pullFail") + e.message);
     }
   });
+
+  // ---- Highlight imported profile (from community import) ----
+  const params = new URLSearchParams(location.search);
+  const highlightId = params.get("highlight");
+  if (highlightId) {
+    const el = document.querySelector(`.profile-editor[data-id="${highlightId}"]`);
+    if (el) {
+      el.classList.remove("collapsed");
+      el.classList.add("profile-highlight");
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+      setTimeout(() => {
+        el.classList.remove("profile-highlight");
+      }, 3000);
+    }
+  }
 }
 
 // ---- AI Chat Profile Editor ----

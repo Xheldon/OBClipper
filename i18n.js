@@ -95,6 +95,15 @@ const messages = {
     "popup.attachDownloadFail": 'Attachment "{name}" download failed: ',
     "popup.obsidianApiError": "Obsidian API error",
     "popup.downloadFail": "Download attachment failed",
+    // Auto-link
+    "autolink.title": "Auto-link",
+    "autolink.toggle": "Auto-link vault filenames in clipped content (first occurrence only)",
+    "autolink.excludeFolders": "Exclude folders (comma-separated)",
+    "autolink.excludePlaceholder": "e.g. Templates, Archive/old",
+    "autolink.saveBtn": "Save",
+    // Community Profiles
+    "profiles.communityLink": "Browse Community Profiles",
+    "profile.communityBadge": "Imported from community",
   },
   zh: {
     // Options page
@@ -192,6 +201,15 @@ const messages = {
     "popup.attachDownloadFail": "附件「{name}」下载失败: ",
     "popup.obsidianApiError": "Obsidian API 错误",
     "popup.downloadFail": "下载附件失败",
+    // 自动双链
+    "autolink.title": "自动双链",
+    "autolink.toggle": "将在剪藏内容中与 Vault 中同名的文件识别为双链插入（仅每个文件名首次遇到）",
+    "autolink.excludeFolders": "排除文件夹（逗号分隔）",
+    "autolink.excludePlaceholder": "例如：Templates, Archive/old",
+    "autolink.saveBtn": "保存",
+    // 社区 Profiles
+    "profiles.communityLink": "浏览社区 Profiles",
+    "profile.communityBadge": "来自社区导入",
   },
 };
 
