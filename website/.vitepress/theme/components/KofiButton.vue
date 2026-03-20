@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 
-onMounted(() => {
+function initKofi() {
   const w = (window as any)
   if (w.kofiwidget2) {
     w.kofiwidget2.init('Support me on Ko-fi', '#9273f5', 'K3K01C2NWU')
@@ -9,8 +9,16 @@ onMounted(() => {
     if (el) {
       el.innerHTML = w.kofiwidget2.getHTML()
     }
+    return
   }
-})
+  // SDK not loaded yet, wait for it
+  const script = document.querySelector('script[src*="ko-fi"]') as HTMLScriptElement | null
+  if (script) {
+    script.addEventListener('load', initKofi)
+  }
+}
+
+onMounted(initKofi)
 </script>
 
 <template>

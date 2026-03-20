@@ -365,6 +365,50 @@
   margin: 0;
 }
 
+/* Site footer */
+.site-footer {
+  border-top: 1px solid var(--vp-c-divider);
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.footer-kofi {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.footer-links-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.footer-links a {
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.footer-links a:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: var(--vp-c-text-3);
+}
+
 /* Donate nav link */
 .donate-link {
   color: var(--vp-c-brand-1) !important;
