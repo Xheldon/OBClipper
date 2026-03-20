@@ -164,6 +164,19 @@ function createProfileEditor(profile) {
     }
   });
 
+  // Export single profile
+  el.querySelector(".export-profile-btn").addEventListener("click", () => {
+    const data = readProfileFromEditor(el);
+    delete data.id;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `profile-${(data.name || "unnamed").replace(/[^a-zA-Z0-9_-]/g, "_")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
   // Save
   el.querySelector(".save-profile-btn").addEventListener("click", async () => {
     const updated = readProfileFromEditor(el);
@@ -265,11 +278,17 @@ async function init() {
   });
 
   // ---- Auto-link settings ----
-  document.getElementById("autoLinkEnabled").checked = cfg.autoLinkEnabled !== false;
+  const $autoLinkEnabled = document.getElementById("autoLinkEnabled");
+  const $autoLinkBody = document.getElementById("autoLinkBody");
+  $autoLinkEnabled.checked = cfg.autoLinkEnabled !== false;
+  $autoLinkBody.style.display = $autoLinkEnabled.checked ? "" : "none";
   document.getElementById("autoLinkExcludeFolders").value = cfg.autoLinkExcludeFolders || "";
+  $autoLinkEnabled.addEventListener("change", async () => {
+    $autoLinkBody.style.display = $autoLinkEnabled.checked ? "" : "none";
+    await chrome.storage.local.set({ autoLinkEnabled: $autoLinkEnabled.checked });
+  });
   document.getElementById("saveAutoLinkBtn").addEventListener("click", async () => {
     await chrome.storage.local.set({
-      autoLinkEnabled: document.getElementById("autoLinkEnabled").checked,
       autoLinkExcludeFolders: document.getElementById("autoLinkExcludeFolders").value.trim(),
     });
     showHint(document.getElementById("autoLinkSaveHint"), t("hint.saved"));
@@ -416,8 +435,11 @@ function initAIProfileEditor(ai) {
   // Enable toggle
   $enabled.checked = ai.enabled !== false;
   $body.style.display = $enabled.checked ? "" : "none";
-  $enabled.addEventListener("change", () => {
+  $enabled.addEventListener("change", async () => {
     $body.style.display = $enabled.checked ? "" : "none";
+    const cur = await loadConfig();
+    cur.aiProfile.enabled = $enabled.checked;
+    await chrome.storage.local.set({ aiProfile: cur.aiProfile });
   });
 
   // Built-in URL list (read-only display)

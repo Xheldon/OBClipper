@@ -1,0 +1,49 @@
+[
+  {
+    "name": "Blog Post (General)",
+    "description": "Extract blog posts with title, author, and content. Works on most blog platforms.",
+    "autoMatch": false,
+    "urlPatterns": [],
+    "selectors": [
+      { "name": "author", "selector": "[rel='author'], .author, .post-author, .byline" },
+      { "name": "published", "selector": "time[datetime], .post-date, .published", "attr": "datetime" }
+    ],
+    "template": "---\ntitle: {{TITLE}}\nauthor: {{author}}\ndate: {{published}}\nurl: {{URL}}\nclipped: {{TIMESTAMP}}\n---\n\n{{CONTENT}}",
+    "vaultPath": "Clippings/{{TITLE}}.md"
+  },
+  {
+    "name": "GitHub Issue",
+    "description": "Extract GitHub issue title, body, labels, and metadata.",
+    "autoMatch": true,
+    "urlPatterns": ["https://github.com/*/*/issues/*"],
+    "selectors": [
+      { "name": "issue_title", "selector": ".js-issue-title" },
+      { "name": "author", "selector": ".author" },
+      { "name": "state", "selector": ".State" }
+    ],
+    "template": "---\ntitle: {{issue_title}}\nauthor: {{author}}\nstate: {{state}}\nurl: {{URL}}\ndate: {{DATE}}\n---\n\n{{CONTENT}}",
+    "vaultPath": "GitHub/Issues/{{issue_title}}.md"
+  },
+  {
+    "name": "Hacker News",
+    "description": "Extract Hacker News post title, points, and comments link.",
+    "autoMatch": true,
+    "urlPatterns": ["https://news.ycombinator.com/item?id=*"],
+    "selectors": [
+      { "name": "hn_title", "selector": ".titleline > a" },
+      { "name": "points", "selector": ".score" },
+      { "name": "hn_author", "selector": ".hnuser" }
+    ],
+    "template": "---\ntitle: {{hn_title}}\npoints: {{points}}\nauthor: {{hn_author}}\nurl: {{URL}}\ndate: {{DATE}}\n---\n\n{{CONTENT}}",
+    "vaultPath": "HackerNews/{{hn_title}}.md"
+  },
+  {
+    "name": "Wikipedia",
+    "description": "Extract Wikipedia article content with clean formatting.",
+    "autoMatch": true,
+    "urlPatterns": ["https://*.wikipedia.org/wiki/*"],
+    "selectors": [],
+    "template": "---\ntitle: {{TITLE}}\nurl: {{URL}}\nclipped: {{TIMESTAMP}}\n---\n\n{{CONTENT}}",
+    "vaultPath": "Wikipedia/{{TITLE}}.md"
+  }
+]

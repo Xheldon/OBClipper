@@ -78,6 +78,12 @@ header h1 {
   margin-bottom: 0;
 }
 
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 14px;
+}
+
 .save-hint {
   margin-left: 10px;
   font-size: 12px;
@@ -119,10 +125,16 @@ header h1 {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
   padding: 12px 16px;
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
+}
+
+.profile-collapse-header .btn-ghost {
+  font-size: 12px;
+  padding: 4px 10px;
 }
 .profile-collapse-header:hover {
   background: var(--surface-hover);

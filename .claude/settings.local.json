@@ -28,7 +28,16 @@
       "Bash(powershell -Command \"Write-Output ''hello''\")",
       "Bash(node -e \"const fs=require\\(''fs''\\); fs.writeFileSync\\(''d:/repo/OBClipper/_test.txt'',''node works\\\\n''\\)\")",
       "Bash(openssl genpkey:*)",
-      "Bash(openssl rsa:*)"
+      "Bash(openssl rsa:*)",
+      "Bash(grep -r \"communityProfilesLink\\\\|community.*profiles\\\\|profiles.*community\" /Users/x/Developer/OBClipper/*.js)",
+      "Bash(grep -n \"document.getElementById.*communityProfilesLink\\\\|.communityProfilesLink\\\\|#communityProfilesLink\" /Users/x/Developer/OBClipper/*.js)",
+      "Bash(npm install:*)",
+      "Bash(npx vitepress:*)",
+      "Bash(convert --version)",
+      "Bash(magick --version)",
+      "Bash(magick /Users/x/Developer/OBClipper/website/public/logo.webp -fuzz 15% -transparent white -resize 512x512 -gravity center -extent 512x512 /Users/x/Developer/OBClipper/website/public/logo.webp)",
+      "Bash(magick identify:*)",
+      "Bash(magick /Users/x/Developer/OBClipper/icons/icon-source.png -fuzz 20% -transparent white -trim +repage -resize 512x512 -background none -gravity center -extent 512x512 -define webp:lossless=true /Users/x/Developer/OBClipper/website/public/logo.webp)"
     ]
   }
 }

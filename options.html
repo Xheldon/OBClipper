@@ -44,24 +44,28 @@
 
     <!-- Auto-link Settings -->
     <section class="card" id="autolink-section">
-      <h2 data-i18n="autolink.title">Auto-link</h2>
-      <div class="field">
+      <div class="section-header">
+        <h2 data-i18n="autolink.title">Auto-link</h2>
         <div class="toggle-wrap">
           <label class="toggle">
             <input type="checkbox" id="autoLinkEnabled" checked>
             <span class="toggle-slider"></span>
           </label>
-          <span data-i18n="autolink.toggle">Auto-link vault filenames in clipped content (first occurrence only)</span>
+          <span data-i18n="autolink.toggle">Enable</span>
         </div>
       </div>
-      <div class="field" id="autoLinkExcludeField">
-        <label data-i18n="autolink.excludeFolders">Exclude folders (comma-separated)</label>
-        <input type="text" id="autoLinkExcludeFolders"
-               data-i18n-placeholder="autolink.excludePlaceholder"
-               placeholder="e.g. Templates, Archive/old">
+
+      <div id="autoLinkBody">
+        <p class="section-desc" data-i18n="autolink.desc">Auto-link vault filenames in clipped content (first occurrence only)</p>
+        <div class="field" id="autoLinkExcludeField">
+          <label data-i18n="autolink.excludeFolders">Exclude folders (comma-separated)</label>
+          <input type="text" id="autoLinkExcludeFolders"
+                 data-i18n-placeholder="autolink.excludePlaceholder"
+                 placeholder="e.g. Templates, Archive/old">
+        </div>
+        <button class="btn-primary" id="saveAutoLinkBtn" data-i18n="autolink.saveBtn">Save</button>
+        <span class="save-hint" id="autoLinkSaveHint"></span>
       </div>
-      <button class="btn-primary" id="saveAutoLinkBtn" data-i18n="autolink.saveBtn">Save</button>
-      <span class="save-hint" id="autoLinkSaveHint"></span>
     </section>
 
     <!-- Profiles -->
@@ -69,7 +73,7 @@
       <div class="section-header">
         <h2 data-i18n="profiles.title">Profiles</h2>
         <div class="section-header-actions">
-          <a class="community-link" id="communityProfilesLink" href="#" target="_blank">
+          <a class="community-link" id="communityProfilesLink" href="https://obclipper.pages.dev/community" target="_blank">
             <span class="link-icon">🔗</span>
             <span data-i18n="profiles.communityLink">Browse Community Profiles</span>
           </a>
@@ -180,6 +184,7 @@
           <span class="profile-collapse-arrow">▼</span>
           <span class="profile-collapse-name">Unnamed Profile</span>
         </span>
+        <button class="btn-ghost export-profile-btn" data-i18n="profile.exportBtn">Export</button>
         <button class="btn-danger delete-profile-btn" data-i18n="profile.deleteBtn">Delete</button>
       </div>
       <div class="profile-collapse-body">
