@@ -280,31 +280,31 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* Page layout — constrain width with responsive padding */
+/* Page layout — match home page Hero/Features container width (1152px) */
 .VPPage {
-  max-width: 1440px;
+  max-width: 1152px;
   margin: 0 auto;
-  padding: 48px 24px;
+  padding: 48px 0;
 }
 
-@media (min-width: 768px) {
-  .VPPage {
-    padding: 48px 48px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .VPPage {
-    padding: 48px 80px;
-  }
-}
-
-/* Comparison section on home page */
+/* Comparison section on home page — match Hero/Features container */
 .compare-section {
   max-width: 1152px;
   margin: 64px auto 0;
   padding: 0 24px 64px;
   scroll-margin-top: 80px;
+}
+
+@media (min-width: 640px) {
+  .compare-section {
+    padding: 0 48px 64px;
+  }
+}
+
+@media (min-width: 960px) {
+  .compare-section {
+    padding: 0 64px 64px;
+  }
 }
 
 .compare-title {

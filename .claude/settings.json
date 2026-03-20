@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(node -e \":*)",
-      "Bash(node -e \"require\\(''fs''\\).unlinkSync\\(''d:/repo/OBClipper/_done.txt''\\)\")"
+      "Bash(node -e \"require\\(''fs''\\).unlinkSync\\(''d:/repo/OBClipper/_done.txt''\\)\")",
+      "Bash(grep -E \"website.*\\\\.\\(html|css\\)$\")",
+      "Bash(grep -r \"VPContent\\\\|VPPage\\\\|\\\\.container\" /d/repo/OBClipper/website/node_modules/vitepress/dist/client/theme-default/styles/*.css)",
+      "Bash(grep -n \"vp-layout-max-width\\\\|VPContent\" /d/repo/OBClipper/website/node_modules/vitepress/dist/client/theme-default/styles/*.css)"
     ]
   }
 }
