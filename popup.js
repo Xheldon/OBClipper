@@ -125,9 +125,14 @@ async function extractAIChatContent(tabId, siteConfig) {
           if (typeof Defuddle === "undefined") return html;
           try {
             const doc = new DOMParser().parseFromString(
-              `<!DOCTYPE html><html><body>${html}</body></html>`, "text/html"
+              `<!DOCTYPE html><html><body><article>${html}</article></body></html>`, "text/html"
             );
-            const result = new Defuddle(doc, { markdown: true }).parse();
+            const result = new Defuddle(doc, {
+              markdown: true,
+              removeHiddenElements: false,
+              removeLowScoring: false,
+              removePartialSelectors: false,
+            }).parse();
             return (result.content || html).trim();
           } catch (e) {
             return html;
