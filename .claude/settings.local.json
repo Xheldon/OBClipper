@@ -26,7 +26,9 @@
       "Bash(node -e \"const sharp = require\\(''sharp''\\); console.log\\(''sharp available''\\);\")",
       "Bash(node -e \"console.log\\(''node works''\\)\")",
       "Bash(powershell -Command \"Write-Output ''hello''\")",
-      "Bash(node -e \"const fs=require\\(''fs''\\); fs.writeFileSync\\(''d:/repo/OBClipper/_test.txt'',''node works\\\\n''\\)\")"
+      "Bash(node -e \"const fs=require\\(''fs''\\); fs.writeFileSync\\(''d:/repo/OBClipper/_test.txt'',''node works\\\\n''\\)\")",
+      "Bash(openssl genpkey:*)",
+      "Bash(openssl rsa:*)"
     ]
   }
 }

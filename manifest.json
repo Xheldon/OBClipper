@@ -1,5 +1,6 @@
 {
   "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2iHei00PNQ7ddPoo+nh0/cd6ZUFCsX1IymVHBIbKZjSlj8lI2zYDqIoul/2NixuyKCmalvpad3kHXxqKaXUxck4mCJyRoNATwWtmB50z9Q/lT4NX6RF9Q33l4LYi8aQSo9ljwqjSHT/ZcWB9lMUfFpYOIreoWlzfKfLdfJim/gDKoNM2knY3vrza0hhblsUgb+Se42M+nbrDSPC7m1AdFlCGh77HcoECpMoJqyZjiGkt8n7fk3JinZbcp9l+N8mYnt3i5/27Oz5Yao7WxJxQ8vW1tSbQjKgkf7m9g+rs76qq0Zs98AhIwCC9wWykDyMayNuW/xaekyCbQMI675xhLwIDAQAB",
   "name": "OBClipper - Save to Obsidian",
   "version": "1.0.0",
   "description": "Extract web content and save to Obsidian via Local REST API",
