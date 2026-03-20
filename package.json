@@ -4,7 +4,8 @@
   "description": "A Chrome browser extension that extracts content from any webpage using custom CSS selectors and saves it to your Obsidian Vault via the [Local REST API](https://github.com/coddingtonbear/obsidian-local-rest-api) plugin.",
   "main": "background.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "cp node_modules/defuddle/dist/index.full.js lib/defuddle.js"
   },
   "keywords": [],
   "author": "",
