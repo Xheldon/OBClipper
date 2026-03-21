@@ -38,7 +38,7 @@
         <label data-i18n="api.keyLabel">API Key</label>
         <input type="password" id="apiKey" data-i18n-placeholder="api.keyPlaceholder" placeholder="Get from Obsidian plugin settings">
       </div>
-      <button class="btn-primary" id="saveApiBtn" data-i18n="api.saveBtn">Save API Config</button>
+      <button class="btn-primary" id="saveApiBtn" data-i18n="common.saveBtn">Save</button>
       <span class="save-hint" id="apiSaveHint"></span>
     </section>
 
@@ -63,7 +63,7 @@
                  data-i18n-placeholder="autolink.excludePlaceholder"
                  placeholder="e.g. Templates, Archive/old">
         </div>
-        <button class="btn-primary" id="saveAutoLinkBtn" data-i18n="autolink.saveBtn">Save</button>
+        <button class="btn-primary" id="saveAutoLinkBtn" data-i18n="common.saveBtn">Save</button>
         <span class="save-hint" id="autoLinkSaveHint"></span>
       </div>
     </section>
@@ -148,12 +148,12 @@
           <input type="text" id="aiVaultPath" placeholder="AI Chat/{{TITLE}}.md">
         </div>
 
-        <button class="btn-primary" id="aiSaveBtn" data-i18n="ai.saveBtn">Save AI Chat Settings</button>
+        <button class="btn-primary" id="aiSaveBtn" data-i18n="common.saveBtn">Save</button>
         <span class="save-hint" id="aiSaveHint"></span>
       </div>
     </section>
 
-    <!-- Import / Export -->
+    <!-- Import / Export & Config Sync -->
     <section class="card" id="io-section">
       <h2 data-i18n="io.title">Import / Export Config</h2>
       <div class="io-actions">
@@ -162,11 +162,9 @@
         <input type="file" id="importFile" accept=".json" style="display:none">
       </div>
       <span class="save-hint" id="ioHint"></span>
-    </section>
 
-    <!-- Config Sync -->
-    <section class="card" id="sync-section">
-      <h2 data-i18n="sync.title">Config Sync</h2>
+      <hr class="section-divider">
+      <h3 data-i18n="sync.title">Config Sync</h3>
       <p class="sync-desc" data-i18n="sync.desc">Sync profiles and settings across Chrome browsers via your Google account. API URL and Key are always local.</p>
       <div class="sync-actions">
         <button class="btn-primary" id="syncPushBtn" data-i18n="sync.pushBtn">Push to Cloud</button>
@@ -287,7 +285,7 @@
         <input type="text" class="attachment-path" placeholder="Attachments/">
       </div>
 
-      <button class="btn-primary save-profile-btn" data-i18n="profile.saveBtn">Save Profile</button>
+      <button class="btn-primary save-profile-btn" data-i18n="common.saveBtn">Save</button>
       <span class="save-hint profile-save-hint"></span>
       </div><!-- /profile-collapse-body -->
     </div>

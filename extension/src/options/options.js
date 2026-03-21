@@ -1,42 +1,7 @@
-import { t, loadLang, saveLang, applyI18n, currentLang } from "../shared/i18n.js";
+import { t, loadLang, saveLang, applyI18n, applyI18nInEl, currentLang } from "../shared/i18n.js";
 import { AI_CHAT_SITES } from "../shared/ai-chat-config.js";
-
-// ---- Storage helpers ----
-
-async function loadConfig() {
-  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile, autoLinkEnabled, autoLinkExcludeFolders } = await chrome.storage.local.get([
-    "apiUrl",
-    "apiKey",
-    "profiles",
-    "defaultProfileId",
-    "aiProfile",
-    "autoLinkEnabled",
-    "autoLinkExcludeFolders",
-  ]);
-  return {
-    apiUrl: apiUrl || "https://127.0.0.1:27124",
-    apiKey: apiKey || "",
-    profiles: profiles || [],
-    defaultProfileId: defaultProfileId || null,
-    aiProfile: aiProfile || { enabled: true, template: "", vaultPath: "", selectors: [] },
-    autoLinkEnabled: autoLinkEnabled !== undefined ? autoLinkEnabled : true,
-    autoLinkExcludeFolders: autoLinkExcludeFolders || "",
-  };
-}
-
-async function saveApiConfig(url, key) {
-  await chrome.storage.local.set({ apiUrl: url, apiKey: key });
-}
-
-async function saveProfiles(profiles) {
-  await chrome.storage.local.set({ profiles });
-}
-
-// ---- Generate unique ID ----
-
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
+import { loadConfig, saveApiConfig, saveProfiles, uid } from "../shared/config.js";
+import { showHint } from "../shared/ui-helpers.js";
 
 // ---- Render ----
 
@@ -59,21 +24,6 @@ function createSelectorRow(varName = "", selector = "", transform = "", attr = "
   }
   applyI18nInEl(row);
   return row;
-}
-
-function applyI18nInEl(el) {
-  el.querySelectorAll("[data-i18n]").forEach((node) => {
-    node.textContent = t(node.dataset.i18n);
-  });
-  el.querySelectorAll("[data-i18n-html]").forEach((node) => {
-    node.innerHTML = t(node.dataset.i18nHtml);
-  });
-  el.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
-    node.placeholder = t(node.dataset.i18nPlaceholder);
-  });
-  el.querySelectorAll("[data-i18n-title]").forEach((node) => {
-    node.title = t(node.dataset.i18nTitle);
-  });
 }
 
 function createProfileEditor(profile) {
@@ -238,13 +188,6 @@ function readProfileFromEditor(el) {
   return result;
 }
 
-function showHint(el, msg) {
-  el.textContent = msg;
-  setTimeout(() => {
-    el.textContent = "";
-  }, 2000);
-}
-
 // ---- Language switcher ----
 
 function updateLangButtons() {
@@ -365,6 +308,7 @@ async function init() {
   // ---- Config Sync ----
 
   document.getElementById("syncPushBtn").addEventListener("click", async () => {
+    if (!confirm(t("sync.confirmPush"))) return;
     try {
       const cur = await loadConfig();
       const syncData = {

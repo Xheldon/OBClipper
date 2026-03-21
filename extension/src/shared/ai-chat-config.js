@@ -1,3 +1,5 @@
+import { matchUrl } from "./template-utils.js";
+
 const AI_PROFILE_ID = "__ai_chat__";
 
 const AI_CHAT_SITES = [
@@ -33,10 +35,7 @@ const AI_CHAT_SITES = [
 function getMatchedAIChatSite(url) {
   for (const site of AI_CHAT_SITES) {
     for (const pattern of site.urlPatterns) {
-      const escaped = pattern
-        .replace(/[.+^${}()|[\]\\]/g, "\\$&")
-        .replace(/\*/g, ".*");
-      if (new RegExp("^" + escaped + "$").test(url)) {
+      if (matchUrl(pattern, url)) {
         return site;
       }
     }

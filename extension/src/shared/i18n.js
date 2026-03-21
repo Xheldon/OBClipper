@@ -58,6 +58,7 @@ const messages = {
     "io.title": "Import / Export Config",
     "io.exportBtn": "Export All Config",
     "io.importBtn": "Import Config",
+    "common.saveBtn": "Save",
     "hint.saved": "Saved",
     "hint.exported": "Exported",
     "hint.imported": "Imported, page will reload",
@@ -74,6 +75,7 @@ const messages = {
     "sync.pushFail": "Push failed: ",
     "sync.pullFail": "Pull failed: ",
     "sync.noRemote": "No remote config found, please push first",
+    "sync.confirmPush": "This will overwrite the cloud config with your local settings. Continue?",
     "sync.confirmPull": "This will overwrite your local profiles and settings with the remote config. Continue?",
     // Popup page
     "popup.settings": "Settings",
@@ -166,6 +168,7 @@ const messages = {
     "io.title": "导入 / 导出配置",
     "io.exportBtn": "导出全部配置",
     "io.importBtn": "导入配置",
+    "common.saveBtn": "保存",
     "hint.saved": "已保存",
     "hint.exported": "已导出",
     "hint.imported": "已导入，页面将刷新",
@@ -182,6 +185,7 @@ const messages = {
     "sync.pushFail": "推送失败: ",
     "sync.pullFail": "拉取失败: ",
     "sync.noRemote": "云端没有找到配置，请先推送",
+    "sync.confirmPush": "这将用本地配置覆盖云端配置，是否继续？",
     "sync.confirmPull": "这将用远端配置覆盖本地的 Profile 和设置，是否继续？",
     // Popup page
     "popup.settings": "设置",
@@ -241,18 +245,22 @@ async function saveLang(lang) {
 }
 
 function applyI18n() {
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    el.textContent = t(el.dataset.i18n);
+  applyI18nInEl(document);
+}
+
+function applyI18nInEl(el) {
+  el.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
   });
-  document.querySelectorAll("[data-i18n-html]").forEach((el) => {
-    el.innerHTML = t(el.dataset.i18nHtml);
+  el.querySelectorAll("[data-i18n-html]").forEach((node) => {
+    node.innerHTML = t(node.dataset.i18nHtml);
   });
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    el.placeholder = t(el.dataset.i18nPlaceholder);
+  el.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+    node.placeholder = t(node.dataset.i18nPlaceholder);
   });
-  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
-    el.title = t(el.dataset.i18nTitle);
+  el.querySelectorAll("[data-i18n-title]").forEach((node) => {
+    node.title = t(node.dataset.i18nTitle);
   });
 }
 
-export { t, loadLang, saveLang, applyI18n, currentLang, messages };
+export { t, loadLang, saveLang, applyI18n, applyI18nInEl, currentLang, messages };

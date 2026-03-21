@@ -1,55 +1,10 @@
 import { t, loadLang, applyI18n } from "../shared/i18n.js";
 import { AI_PROFILE_ID, getMatchedAIChatSite } from "../shared/ai-chat-config.js";
+import { loadConfig } from "../shared/config.js";
+import { matchUrl, renderTemplate, renderPathTemplate } from "../shared/template-utils.js";
+import { escapeHtml, truncate } from "../shared/ui-helpers.js";
 
-// ---- Helpers ----
-
-async function loadConfig() {
-  const { apiUrl, apiKey, profiles, defaultProfileId, aiProfile, autoLinkEnabled, autoLinkExcludeFolders } = await chrome.storage.local.get([
-    "apiUrl",
-    "apiKey",
-    "profiles",
-    "defaultProfileId",
-    "aiProfile",
-    "autoLinkEnabled",
-    "autoLinkExcludeFolders",
-  ]);
-  return {
-    apiUrl: apiUrl || "https://127.0.0.1:27124",
-    apiKey: apiKey || "",
-    profiles: profiles || [],
-    defaultProfileId: defaultProfileId || null,
-    aiProfile: aiProfile || { enabled: true, template: "", vaultPath: "", selectors: [] },
-    autoLinkEnabled: autoLinkEnabled !== undefined ? autoLinkEnabled : true,
-    autoLinkExcludeFolders: autoLinkExcludeFolders || "",
-  };
-}
-
-function matchUrl(pattern, url) {
-  const escaped = pattern
-    .replace(/[.+^${}()|[\]\\]/g, "\\$&")
-    .replace(/\*/g, ".*");
-  return new RegExp("^" + escaped + "$").test(url);
-}
-
-function renderTemplate(template, vars) {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? "");
-}
-
-function sanitizeForPath(str) {
-  return str
-    .replace(/[\\:*?"<>|]/g, "_")
-    .replace(/\.\.\//g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function renderPathTemplate(template, vars) {
-  const sanitized = {};
-  for (const [k, v] of Object.entries(vars)) {
-    sanitized[k] = sanitizeForPath(v);
-  }
-  return renderTemplate(template, sanitized);
-}
+// ---- Status UI ----
 
 function showStatus(msg, type) {
   const el = document.getElementById("status");
@@ -385,8 +340,6 @@ function autoLinkContent(content, fileNames) {
 }
 
 // Download image by drawing it on a canvas in the page context
-// This works because the <img> is already loaded by the page (with correct referer/cookies)
-// We just need to extract the pixel data via canvas
 async function fetchImageViaPage(fileUrl) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const results = await chrome.scripting.executeScript({
@@ -394,7 +347,6 @@ async function fetchImageViaPage(fileUrl) {
     world: "MAIN",
     func: async (url) => {
       try {
-        // Create an image element and load it (browser uses page's context for the request)
         const img = new Image();
         img.crossOrigin = "anonymous";
         const loaded = new Promise((resolve, reject) => {
@@ -410,7 +362,6 @@ async function fetchImageViaPage(fileUrl) {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
 
-        // Try to get as original format; fall back to png
         let dataUrl;
         if (url.includes(".webp")) {
           dataUrl = canvas.toDataURL("image/webp", 1);
@@ -430,7 +381,7 @@ async function fetchImageViaPage(fileUrl) {
   return results[0].result;
 }
 
-// Fallback: find an already-rendered <img> on the page with matching src and draw it to canvas
+// Fallback: find an already-rendered <img> on the page with matching src
 async function fetchImageFromDom(fileUrl) {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const results = await chrome.scripting.executeScript({
@@ -438,7 +389,6 @@ async function fetchImageFromDom(fileUrl) {
     world: "MAIN",
     func: (url) => {
       try {
-        // Find the img element on the page that matches the URL
         const imgs = document.querySelectorAll("img");
         let img = null;
         for (const el of imgs) {
@@ -447,7 +397,6 @@ async function fetchImageFromDom(fileUrl) {
             break;
           }
         }
-        // Also try matching by partial path
         if (!img) {
           const urlPath = new URL(url).pathname;
           for (const el of imgs) {
@@ -466,8 +415,6 @@ async function fetchImageFromDom(fileUrl) {
         canvas.height = img.naturalHeight;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
-        // No crossOrigin set on the original img, so canvas is not tainted
-        // (same-origin images or images served without CORS headers still work)
         try {
           const dataUrl = canvas.toDataURL("image/png");
           const contentType = "image/png";
@@ -770,18 +717,6 @@ async function doExtractAndSave() {
 
   $extractBtn.disabled = false;
   $extractBtn.textContent = t("popup.extractBtn");
-}
-
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function truncate(str, n) {
-  return str.length > n ? str.slice(0, n) + "…" : str;
 }
 
 init();
