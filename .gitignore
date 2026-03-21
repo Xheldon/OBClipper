@@ -1,5 +1,7 @@
 node_modules/
 package-lock.json
+extension/dist/
+extension/public/lib/defuddle.js
 website/.vitepress/dist/
 website/.vitepress/cache/
 .DS_Store

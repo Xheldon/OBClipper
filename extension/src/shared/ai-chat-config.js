@@ -43,3 +43,5 @@ function getMatchedAIChatSite(url) {
   }
   return null;
 }
+
+export { AI_PROFILE_ID, AI_CHAT_SITES, getMatchedAIChatSite };

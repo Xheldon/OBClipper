@@ -1,3 +1,6 @@
+import { t, loadLang, saveLang, applyI18n, currentLang } from "../shared/i18n.js";
+import { AI_CHAT_SITES } from "../shared/ai-chat-config.js";
+
 // ---- Storage helpers ----
 
 async function loadConfig() {

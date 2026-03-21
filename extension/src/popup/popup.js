@@ -1,3 +1,6 @@
+import { t, loadLang, applyI18n } from "../shared/i18n.js";
+import { AI_PROFILE_ID, getMatchedAIChatSite } from "../shared/ai-chat-config.js";
+
 // ---- Helpers ----
 
 async function loadConfig() {

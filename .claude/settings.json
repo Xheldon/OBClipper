@@ -5,7 +5,12 @@
       "Bash(node -e \"require\\(''fs''\\).unlinkSync\\(''d:/repo/OBClipper/_done.txt''\\)\")",
       "Bash(grep -E \"website.*\\\\.\\(html|css\\)$\")",
       "Bash(grep -r \"VPContent\\\\|VPPage\\\\|\\\\.container\" /d/repo/OBClipper/website/node_modules/vitepress/dist/client/theme-default/styles/*.css)",
-      "Bash(grep -n \"vp-layout-max-width\\\\|VPContent\" /d/repo/OBClipper/website/node_modules/vitepress/dist/client/theme-default/styles/*.css)"
+      "Bash(grep -n \"vp-layout-max-width\\\\|VPContent\" /d/repo/OBClipper/website/node_modules/vitepress/dist/client/theme-default/styles/*.css)",
+      "Bash(grep -r \"Tpl\\\\|Template\\\\|template\" /d/repo/OBClipper/*.html)",
+      "Bash(grep -E \"\\\\.\\(js|html|css|json|md\\)$\")",
+      "Read(//c/Users/admin/.claude/plans/**)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:vite-plugin-web-extension.aklinker1.io)"
     ]
   }
 }

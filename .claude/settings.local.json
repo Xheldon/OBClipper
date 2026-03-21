@@ -37,7 +37,8 @@
       "Bash(magick --version)",
       "Bash(magick /Users/x/Developer/OBClipper/website/public/logo.webp -fuzz 15% -transparent white -resize 512x512 -gravity center -extent 512x512 /Users/x/Developer/OBClipper/website/public/logo.webp)",
       "Bash(magick identify:*)",
-      "Bash(magick /Users/x/Developer/OBClipper/icons/icon-source.png -fuzz 20% -transparent white -trim +repage -resize 512x512 -background none -gravity center -extent 512x512 -define webp:lossless=true /Users/x/Developer/OBClipper/website/public/logo.webp)"
+      "Bash(magick /Users/x/Developer/OBClipper/icons/icon-source.png -fuzz 20% -transparent white -trim +repage -resize 512x512 -background none -gravity center -extent 512x512 -define webp:lossless=true /Users/x/Developer/OBClipper/website/public/logo.webp)",
+      "Read(//tmp/**)"
     ]
   }
 }

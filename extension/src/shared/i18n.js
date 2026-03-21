@@ -254,3 +254,5 @@ function applyI18n() {
     el.title = t(el.dataset.i18nTitle);
   });
 }
+
+export { t, loadLang, saveLang, applyI18n, currentLang, messages };

@@ -27,7 +27,7 @@ async function handleImportProfile(profile) {
   list.push(imported);
   await chrome.storage.local.set({ profiles: list });
   // Open options page scrolled to new profile
-  chrome.tabs.create({ url: chrome.runtime.getURL(`options.html?highlight=${newId}`) });
+  chrome.tabs.create({ url: chrome.runtime.getURL(`src/options/options.html?highlight=${newId}`) });
   return { success: true, id: newId };
 }
 
