@@ -91,6 +91,10 @@ header h1 {
 }
 
 /* API plugin link */
+.api-backend-info {
+  margin-bottom: 14px;
+}
+
 .api-plugin-link {
   display: inline-flex;
   align-items: center;

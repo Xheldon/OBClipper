@@ -24,9 +24,9 @@ features:
   - icon: "\uD83E\uDD16"
     title: AI 对话剪藏
     details: 将 Claude、ChatGPT、Gemini 的对话剪藏为格式优美的 Obsidian Callout 块。
-  - icon: "\uD83D\uDD17"
-    title: 自动双链
-    details: 自动识别剪藏内容中与 Vault 文件同名的文本并转为双链，构建你的知识图谱。
+  - icon: "\uD83D\uDD0C"
+    title: 双后端支持
+    details: 可通过 Obsidian Local REST API 或 VaultEcho 保存，适配不同的 Vault 同步方式。
   - icon: "\uD83D\uDCE6"
     title: 附件下载
     details: 自动下载并保存图片和附件，多策略回退机制确保稳定提取。

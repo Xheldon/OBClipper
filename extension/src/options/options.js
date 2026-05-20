@@ -1,6 +1,7 @@
 import { t, loadLang, saveLang, applyI18n, applyI18nInEl, currentLang } from "../shared/i18n.js";
 import { AI_CHAT_SITES } from "../shared/ai-chat-config.js";
-import { loadConfig, saveApiConfig, saveProfiles, uid } from "../shared/config.js";
+import { apiConfigStorageFromImport, loadConfig, saveApiConfig, saveProfiles, uid } from "../shared/config.js";
+import { backendMeta, defaultApiBackends, normalizeBackendType } from "../shared/obsidian-backends.js";
 import { showHint } from "../shared/ui-helpers.js";
 
 // ---- Render ----
@@ -196,6 +197,23 @@ function updateLangButtons() {
   });
 }
 
+function updateApiBackendFields(cfg, backendType) {
+  const type = normalizeBackendType(backendType);
+  const meta = backendMeta(type);
+  const stored = cfg.apiBackends?.[type] || defaultApiBackends()[type];
+
+  document.getElementById("apiBackend").value = type;
+  document.getElementById("apiUrl").value = stored.apiUrl || meta.defaultUrl;
+  document.getElementById("apiUrl").placeholder = meta.defaultUrl;
+  document.getElementById("apiKey").value = stored.apiKey || "";
+  document.getElementById("apiKey").placeholder = t(meta.keyPlaceholderKey);
+
+  const link = document.getElementById("apiBackendLink");
+  link.href = meta.docsUrl;
+  document.getElementById("apiBackendLinkText").textContent = t(meta.linkKey);
+  document.getElementById("apiBackendHint").textContent = t(meta.hintKey);
+}
+
 // ---- Init ----
 
 async function init() {
@@ -213,31 +231,23 @@ async function init() {
 
   const cfg = await loadConfig();
 
-  document.getElementById("apiUrl").value = cfg.apiUrl;
-  document.getElementById("apiKey").value = cfg.apiKey;
+  updateApiBackendFields(cfg, cfg.apiBackend);
+
+  document.getElementById("apiBackend").addEventListener("change", (e) => {
+    updateApiBackendFields(cfg, e.target.value);
+  });
 
   document.getElementById("saveApiBtn").addEventListener("click", async () => {
+    const backend = document.getElementById("apiBackend").value;
     const url = document.getElementById("apiUrl").value.trim();
     const key = document.getElementById("apiKey").value.trim();
-    await saveApiConfig(url, key);
+    await saveApiConfig(backend, url, key);
+    cfg.apiBackend = normalizeBackendType(backend);
+    cfg.apiBackends = {
+      ...cfg.apiBackends,
+      [cfg.apiBackend]: { apiUrl: url, apiKey: key },
+    };
     showHint(document.getElementById("apiSaveHint"), t("hint.saved"));
-  });
-
-  // ---- Auto-link settings ----
-  const $autoLinkEnabled = document.getElementById("autoLinkEnabled");
-  const $autoLinkBody = document.getElementById("autoLinkBody");
-  $autoLinkEnabled.checked = cfg.autoLinkEnabled !== false;
-  $autoLinkBody.style.display = $autoLinkEnabled.checked ? "" : "none";
-  document.getElementById("autoLinkExcludeFolders").value = cfg.autoLinkExcludeFolders || "";
-  $autoLinkEnabled.addEventListener("change", async () => {
-    $autoLinkBody.style.display = $autoLinkEnabled.checked ? "" : "none";
-    await chrome.storage.local.set({ autoLinkEnabled: $autoLinkEnabled.checked });
-  });
-  document.getElementById("saveAutoLinkBtn").addEventListener("click", async () => {
-    await chrome.storage.local.set({
-      autoLinkExcludeFolders: document.getElementById("autoLinkExcludeFolders").value.trim(),
-    });
-    showHint(document.getElementById("autoLinkSaveHint"), t("hint.saved"));
   });
 
   // ---- AI Chat Profile ----
@@ -291,11 +301,8 @@ async function init() {
         throw new Error(t("hint.invalidConfig"));
       }
       await chrome.storage.local.set({
-        apiUrl: data.apiUrl || "https://127.0.0.1:27124",
-        apiKey: data.apiKey || "",
+        ...apiConfigStorageFromImport(data),
         profiles: data.profiles,
-        autoLinkEnabled: data.autoLinkEnabled !== undefined ? data.autoLinkEnabled : true,
-        autoLinkExcludeFolders: data.autoLinkExcludeFolders || "",
       });
       showHint(document.getElementById("ioHint"), t("hint.imported"));
       setTimeout(() => location.reload(), 800);
@@ -315,8 +322,6 @@ async function init() {
         profiles: cur.profiles,
         defaultProfileId: cur.defaultProfileId,
         aiProfile: cur.aiProfile,
-        autoLinkEnabled: cur.autoLinkEnabled,
-        autoLinkExcludeFolders: cur.autoLinkExcludeFolders,
       };
       await chrome.storage.sync.set({ syncedConfig: JSON.stringify(syncData) });
       showHint(document.getElementById("syncHint"), t("sync.pushOk"));
@@ -341,8 +346,6 @@ async function init() {
         profiles: data.profiles,
         defaultProfileId: data.defaultProfileId || null,
         aiProfile: data.aiProfile || cur.aiProfile,
-        autoLinkEnabled: data.autoLinkEnabled !== undefined ? data.autoLinkEnabled : true,
-        autoLinkExcludeFolders: data.autoLinkExcludeFolders || "",
       });
       showHint(document.getElementById("syncHint"), t("sync.pullOk"));
       setTimeout(() => location.reload(), 800);

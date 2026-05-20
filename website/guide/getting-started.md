@@ -39,4 +39,3 @@
 
 - [Create custom Profiles](./profiles) to extract specific content from different websites
 - [Set up AI Chat clipping](./ai-chat) for Claude, ChatGPT, and Gemini conversations
-- [Enable Auto-link](./auto-link) to automatically create wiki-links in clipped content

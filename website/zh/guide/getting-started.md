@@ -39,4 +39,3 @@
 
 - [创建自定义 Profile](./profiles) 来提取不同网站的特定内容
 - [设置 AI 对话剪藏](./ai-chat) 来剪藏 Claude、ChatGPT 和 Gemini 对话
-- [启用自动双链](./auto-link) 来自动在剪藏内容中创建 wiki 链接

@@ -1,6 +1,12 @@
 import { t, loadLang, applyI18n } from "../shared/i18n.js";
 import { AI_PROFILE_ID, getMatchedAIChatSite } from "../shared/ai-chat-config.js";
 import { loadConfig } from "../shared/config.js";
+import {
+  fileExistsInObsidian,
+  isVaultEchoBackend,
+  saveAttachmentToObsidian,
+  saveFileToObsidian,
+} from "../shared/obsidian-backends.js";
 import { matchUrl, renderTemplate, renderPathTemplate } from "../shared/template-utils.js";
 import { escapeHtml, truncate } from "../shared/ui-helpers.js";
 
@@ -216,127 +222,26 @@ async function extractVariables(selectors) {
 
 // ---- Save to Obsidian ----
 
-async function saveToObsidian(apiUrl, apiKey, filePath, content, contentType = "text/markdown") {
-  // Encode each path segment separately so '/' is preserved
-  const encodedPath = filePath.split("/").map(s => encodeURIComponent(s)).join("/");
-  const url = `${apiUrl}/vault/${encodedPath}`;
-  const resp = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": contentType,
-    },
-    body: content,
-  });
-  if (!resp.ok && resp.status !== 204) {
-    const text = await resp.text();
-    throw new Error(`${t("popup.obsidianApiError")} (${resp.status}): ${text}`);
-  }
+async function saveToObsidian(config, filePath, content, contentType = "text/markdown") {
+  return saveFileToObsidian(config, filePath, content, contentType);
 }
 
-async function fileExists(apiUrl, apiKey, filePath) {
-  const encodedPath = filePath.split("/").map(s => encodeURIComponent(s)).join("/");
-  const url = `${apiUrl}/vault/${encodedPath}`;
-  try {
-    const resp = await fetch(url, {
-      method: "HEAD",
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    return resp.ok;
-  } catch (e) {
-    return false;
-  }
+async function fileExists(config, filePath) {
+  return fileExistsInObsidian(config, filePath);
 }
 
-async function findAvailablePath(apiUrl, apiKey, dir, baseName, ext) {
+async function findAvailablePath(config, dir, baseName, ext) {
   let filePath = dir + baseName + ext;
-  if (!(await fileExists(apiUrl, apiKey, filePath))) return filePath;
+  if (!(await fileExists(config, filePath))) return filePath;
 
   let i = 1;
   while (true) {
     filePath = dir + baseName + "-" + i + ext;
-    if (!(await fileExists(apiUrl, apiKey, filePath))) return filePath;
+    if (!(await fileExists(config, filePath))) return filePath;
     i++;
     if (i > 100) break;
   }
   return filePath;
-}
-
-// ---- Auto-link vault filenames ----
-
-let _vaultFileCache = null;
-let _vaultFileCacheTime = 0;
-const VAULT_FILE_CACHE_TTL = 60000; // 1 minute
-
-async function fetchAllVaultFiles(apiUrl, apiKey, excludeFolders) {
-  // Return cached result if still fresh
-  if (_vaultFileCache && (Date.now() - _vaultFileCacheTime) < VAULT_FILE_CACHE_TTL) {
-    return filterFileNames(_vaultFileCache, excludeFolders);
-  }
-
-  const allFiles = [];
-  const headers = { Authorization: `Bearer ${apiKey}` };
-
-  async function listDir(dirPath) {
-    const encodedPath = dirPath.split("/").map(s => encodeURIComponent(s)).join("/");
-    const url = `${apiUrl}/vault/${encodedPath}`;
-    const resp = await fetch(url, { headers });
-    if (!resp.ok) return;
-    const data = await resp.json();
-    const files = data.files || [];
-    for (const f of files) {
-      const fullPath = dirPath ? dirPath + f : f;
-      if (f.endsWith("/")) {
-        await listDir(fullPath);
-      } else if (f.endsWith(".md")) {
-        allFiles.push(fullPath);
-      }
-    }
-  }
-
-  await listDir("");
-  _vaultFileCache = allFiles;
-  _vaultFileCacheTime = Date.now();
-  return filterFileNames(allFiles, excludeFolders);
-}
-
-function filterFileNames(allFiles, excludeFolders) {
-  const excludes = excludeFolders
-    .split(",")
-    .map(f => f.trim())
-    .filter(Boolean);
-
-  const names = [];
-  for (const filePath of allFiles) {
-    const excluded = excludes.some(folder => {
-      const prefix = folder.endsWith("/") ? folder : folder + "/";
-      return filePath.startsWith(prefix);
-    });
-    if (excluded) continue;
-    const parts = filePath.split("/");
-    const basename = parts[parts.length - 1].replace(/\.md$/, "");
-    if (basename) names.push(basename);
-  }
-
-  // Sort by length descending so longer names match first
-  names.sort((a, b) => b.length - a.length);
-  return [...new Set(names)];
-}
-
-function autoLinkContent(content, fileNames) {
-  if (!content || !fileNames.length) return content;
-
-  let result = content;
-  for (const name of fileNames) {
-    // Escape special regex characters in the filename
-    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    // Don't match if already wrapped in [[...]]
-    const regex = new RegExp(`(?<!\\[\\[)${escaped}(?!\\]\\])`);
-    if (regex.test(result)) {
-      result = result.replace(regex, `[[${name}]]`);
-    }
-  }
-  return result;
 }
 
 // Download image by drawing it on a canvas in the page context
@@ -431,7 +336,7 @@ async function fetchImageFromDom(fileUrl) {
   return results[0].result;
 }
 
-async function downloadAndSaveAttachment(apiUrl, apiKey, attachmentDir, fileUrl, desiredName) {
+async function downloadAndSaveAttachment(config, attachmentDir, fileUrl, desiredName) {
   // Strategy 1: canvas with crossOrigin (new Image load)
   let resp = await fetchImageViaPage(fileUrl);
 
@@ -466,15 +371,19 @@ async function downloadAndSaveAttachment(apiUrl, apiKey, attachmentDir, fileUrl,
 
   const baseName = (desiredName || "attachment").replace(/[\\/:*?"<>|]/g, "_").trim() || "attachment";
 
-  const dir = attachmentDir.endsWith("/") ? attachmentDir : attachmentDir + "/";
-  const filePath = await findAvailablePath(apiUrl, apiKey, dir, baseName, ext);
-
   // Convert base64 data URL back to blob
   const dataUrlResp = await fetch(resp.base64);
   const blob = await dataUrlResp.blob();
 
-  await saveToObsidian(apiUrl, apiKey, filePath, blob, blob.type || "application/octet-stream");
-  return filePath;
+  if (isVaultEchoBackend(config)) {
+    const saved = await saveAttachmentToObsidian(config, baseName + ext, blob, baseName);
+    return saved.path;
+  }
+
+  const dir = attachmentDir.endsWith("/") ? attachmentDir : attachmentDir + "/";
+  const filePath = await findAvailablePath(config, dir, baseName, ext);
+  const saved = await saveAttachmentToObsidian(config, filePath, blob, baseName);
+  return saved.path || filePath;
 }
 
 // ---- Main ----
@@ -664,20 +573,6 @@ async function doExtractAndSave() {
   try {
     const varsForTemplate = { ...currentVars };
 
-    // Auto-link vault filenames in CONTENT
-    if (currentConfig.autoLinkEnabled && varsForTemplate.CONTENT) {
-      try {
-        const fileNames = await fetchAllVaultFiles(
-          currentConfig.apiUrl,
-          currentConfig.apiKey,
-          currentConfig.autoLinkExcludeFolders
-        );
-        varsForTemplate.CONTENT = autoLinkContent(varsForTemplate.CONTENT, fileNames);
-      } catch (e) {
-        console.warn("[OBClipper] Auto-link failed:", e.message);
-      }
-    }
-
     if (isAI) {
       const ai = currentConfig.aiProfile;
       const templatePart = renderTemplate(ai.template || "", varsForTemplate);
@@ -686,7 +581,7 @@ async function doExtractAndSave() {
         : (varsForTemplate.CONTENT || "");
       const filePath = renderPathTemplate(ai.vaultPath || "AI Chat/{{TITLE}}.md", varsForTemplate);
 
-      await saveToObsidian(currentConfig.apiUrl, currentConfig.apiKey, filePath, fileContent);
+      await saveToObsidian(currentConfig, filePath, fileContent);
     } else {
       const attachmentSelectors = profile.selectors.filter((s) => s.attachment);
       for (const sel of attachmentSelectors) {
@@ -696,7 +591,7 @@ async function doExtractAndSave() {
         try {
           const attachName = varsForTemplate["TITLE"] || profile.name || "attachment";
           const savedPath = await downloadAndSaveAttachment(
-            currentConfig.apiUrl, currentConfig.apiKey,
+            currentConfig,
             renderPathTemplate(attachDir, varsForTemplate),
             url, attachName
           );
@@ -707,7 +602,7 @@ async function doExtractAndSave() {
       }
       const content = renderTemplate(profile.template || "", varsForTemplate);
       const filePath = renderPathTemplate(profile.vaultPath || "Clipper/{{TITLE}}.md", varsForTemplate);
-      await saveToObsidian(currentConfig.apiUrl, currentConfig.apiKey, filePath, content);
+      await saveToObsidian(currentConfig, filePath, content);
     }
 
     showStatus(t("popup.saved"), "success");

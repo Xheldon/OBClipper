@@ -24,9 +24,9 @@ features:
   - icon: "\uD83E\uDD16"
     title: AI Chat Clipping
     details: Clip conversations from Claude, ChatGPT, and Gemini as beautifully formatted Obsidian callout blocks.
-  - icon: "\uD83D\uDD17"
-    title: Auto-link
-    details: Automatically link vault filenames found in clipped content, turning your notes into a connected knowledge graph.
+  - icon: "\uD83D\uDD0C"
+    title: Dual Backend
+    details: Save through Obsidian Local REST API or VaultEcho, depending on how your vault is synced.
   - icon: "\uD83D\uDCE6"
     title: Attachment Download
     details: Download and save images and attachments alongside your notes with multi-strategy fallback for reliable extraction.

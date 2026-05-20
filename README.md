@@ -13,7 +13,6 @@ Found a great article, video, or resource online and want to save it to Obsidian
 - **Profile System** — Create different extraction rules for different websites, with URL auto-matching
 - **AI Chat Export** — Built-in support for exporting Claude, ChatGPT, and Gemini conversations
 - **Attachment Download** — Automatically download images and other attachments to your vault
-- **Auto-link** — Automatically link vault filenames found in clipped content as `[[wikilinks]]`
 - **Community Profiles** — Browse and one-click import extraction rules shared by the community
 - **Config Sync** — Sync profiles and settings across Chrome browsers via your Google account
 - **i18n** — English and Simplified Chinese interface
@@ -59,7 +58,7 @@ Each Profile defines a set of extraction rules. You can create different Profile
   - **Attachment**: When checked, the value is treated as a URL and downloaded to the attachment directory
   - **JS Expression**: Post-process the extracted value, e.g. `value.split(' ')[0].trim()`
 - **File Template**: Use `{{variable}}` to compose the final saved file content
-- **Save Path**: Path relative to the Vault root, also supports variables, e.g. `Clippings/{{title}}.md`
+- **Save Path**: Path relative to the Vault root, also supports variables, e.g. `Clippings/{{TITLE}}.md`
 
 ### Built-in Variables
 

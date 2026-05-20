@@ -24,11 +24,18 @@
     <!-- Global API Config -->
     <section class="card" id="api-section">
       <h2 data-i18n="api.title">Obsidian API Config</h2>
-      <div style="margin-bottom: 14px">
-        <a class="api-plugin-link" href="https://github.com/coddingtonbear/obsidian-local-rest-api" target="_blank">
-          <span class="link-icon">🔗</span><span data-i18n="api.pluginLink">Local REST API Plugin</span>
+      <div class="field">
+        <label data-i18n="api.backendLabel">Backend</label>
+        <select id="apiBackend">
+          <option value="local-rest" data-i18n="api.backend.localRest">Local REST API</option>
+          <option value="vault-echo" data-i18n="api.backend.vaultEcho">VaultEcho</option>
+        </select>
+      </div>
+      <div class="api-backend-info">
+        <a class="api-plugin-link" id="apiBackendLink" href="https://github.com/coddingtonbear/obsidian-local-rest-api" target="_blank">
+          <span class="link-icon">🔗</span><span id="apiBackendLinkText" data-i18n="api.localRestLink">Local REST API Plugin</span>
         </a>
-        <span class="api-plugin-hint" data-i18n="api.pluginHint">(or search "Local REST API" in Obsidian plugin marketplace)</span>
+        <span class="api-plugin-hint" id="apiBackendHint" data-i18n="api.backendHint.localRest">Requires desktop Obsidian and the Local REST API plugin.</span>
       </div>
       <div class="field">
         <label data-i18n="api.urlLabel">API URL</label>
@@ -40,32 +47,6 @@
       </div>
       <button class="btn-primary" id="saveApiBtn" data-i18n="common.saveBtn">Save</button>
       <span class="save-hint" id="apiSaveHint"></span>
-    </section>
-
-    <!-- Auto-link Settings -->
-    <section class="card" id="autolink-section">
-      <div class="section-header">
-        <h2 data-i18n="autolink.title">Auto-link</h2>
-        <div class="toggle-wrap">
-          <label class="toggle">
-            <input type="checkbox" id="autoLinkEnabled" checked>
-            <span class="toggle-slider"></span>
-          </label>
-          <span data-i18n="autolink.toggle">Enable</span>
-        </div>
-      </div>
-
-      <div id="autoLinkBody">
-        <p class="section-desc" data-i18n="autolink.desc">Auto-link vault filenames in clipped content (first occurrence only)</p>
-        <div class="field" id="autoLinkExcludeField">
-          <label data-i18n="autolink.excludeFolders">Exclude folders (comma-separated)</label>
-          <input type="text" id="autoLinkExcludeFolders"
-                 data-i18n-placeholder="autolink.excludePlaceholder"
-                 placeholder="e.g. Templates, Archive/old">
-        </div>
-        <button class="btn-primary" id="saveAutoLinkBtn" data-i18n="common.saveBtn">Save</button>
-        <span class="save-hint" id="autoLinkSaveHint"></span>
-      </div>
     </section>
 
     <!-- Profiles -->
@@ -258,13 +239,13 @@
             </span>
           </span>
         </div>
-        <textarea class="template-input" rows="8" placeholder="---&#10;title: {{title}}&#10;---&#10;&#10;{{content}}"></textarea>
+        <textarea class="template-input" rows="8" placeholder="---&#10;title: {{TITLE}}&#10;---&#10;&#10;{{CONTENT}}"></textarea>
       </div>
 
       <!-- Vault path -->
       <div class="field">
         <div class="selector-label-wrap">
-          <label style="margin-bottom:0" data-i18n="profile.vaultPathLabel">Save Path (relative to Vault root, e.g. Articles/{{title}}.md)</label>
+          <label style="margin-bottom:0" data-i18n="profile.vaultPathLabel">Save Path (relative to Vault root, e.g. Articles/{{TITLE}}.md)</label>
           <span class="help-icon">?
             <span class="help-tooltip help-tooltip-builtin">
               <span data-i18n-html="profile.helpBuiltinTitle"></span><br>
@@ -276,7 +257,7 @@
             </span>
           </span>
         </div>
-        <input type="text" class="vault-path" placeholder="Clippings/{{title}}.md">
+        <input type="text" class="vault-path" placeholder="Clippings/{{TITLE}}.md">
       </div>
 
       <!-- Attachment path -->

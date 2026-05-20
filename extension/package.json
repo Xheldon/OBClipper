@@ -1,7 +1,7 @@
 {
   "name": "obclipper",
   "version": "1.0.0",
-  "description": "A Chrome browser extension that extracts content from any webpage using custom CSS selectors and saves it to your Obsidian Vault via the Local REST API plugin.",
+  "description": "A Chrome browser extension that extracts content from any webpage using custom CSS selectors and saves it to your Obsidian Vault via Local REST API or VaultEcho.",
   "type": "module",
   "scripts": {
     "dev": "vite build --watch --mode development",

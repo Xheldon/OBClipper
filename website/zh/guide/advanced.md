@@ -32,7 +32,7 @@ value.replace(/\s+/g, ' ').trim()
 
 通过 Google 账户在多台 Chrome 浏览器之间同步 Profile 和设置：
 
-- **推送到云端** — 将 Profile、AI 对话配置和自动双链设置上传到 Chrome 同步存储
+- **推送到云端** — 将 Profile 和 AI 对话配置上传到 Chrome 同步存储
 - **从云端拉取** — 下载并应用同步的配置
 
 ::: tip

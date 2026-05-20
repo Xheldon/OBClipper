@@ -32,7 +32,7 @@ Each profile has an **Export** button next to the Delete button. This downloads 
 
 Sync your profiles and settings across Chrome browsers using your Google account:
 
-- **Push to Cloud** — Uploads profiles, AI chat config, and auto-link settings to Chrome's sync storage
+- **Push to Cloud** — Uploads profiles and AI chat config to Chrome's sync storage
 - **Pull from Cloud** — Downloads and applies the synced config
 
 ::: tip
